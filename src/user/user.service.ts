@@ -10,8 +10,7 @@ export class UserService {
   constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
 
   async create(createUserDto: CreateUserDto) {
-    await this.userRepository.save({ name: createUserDto.name });
-    return 'This action adds a new user';
+    return await this.userRepository.save({ name: createUserDto.name });
   }
 
   async findAll() {
@@ -20,6 +19,10 @@ export class UserService {
 
   async findOne(id: number) {
     return await this.userRepository.findOneBy({ id });
+  }
+
+  async findOneByLoginId(loginId: string) {
+    return await this.userRepository.findOneBy({ loginId });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
