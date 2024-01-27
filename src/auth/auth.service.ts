@@ -5,6 +5,7 @@ import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { SignupBySsoDto, SsoPlatform } from './dto/signup-by-sso.dto';
 import { TransferSsoTokenDto } from './dto/transfer-sso-token.dto';
+import { JwtPayload } from './jwt.strategy';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +15,7 @@ export class AuthService {
   ) {}
 
   private issueToken(user: User) {
-    const payload = { sub: user.id };
+    const payload: JwtPayload = { sub: user.id };
     return {
       accessToken: this.jwtService.sign(payload),
     };

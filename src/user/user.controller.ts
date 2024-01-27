@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RequestInterface } from 'src/interface/request';
 
 @Controller('user')
 export class UserController {
@@ -10,8 +11,8 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMyProfile(@Request() req: any) {
-    return req.user;
+  async getMyProfile(@Request() req: RequestInterface) {
+    return await this.userService.findOne(req.user.id);
   }
 
   @Post()
