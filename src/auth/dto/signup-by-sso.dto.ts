@@ -1,4 +1,4 @@
-export type SsoPlatform = 'google' | 'kakao';
+export type SsoPlatform = 'develop' | 'google' | 'kakao';
 
 export class SignupBySsoDto {
   platform: SsoPlatform;

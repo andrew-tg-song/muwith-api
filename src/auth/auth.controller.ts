@@ -5,7 +5,7 @@ import { TransferSsoTokenDto } from './dto/transfer-sso-token.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('signup-by-sso')
   async signupBySso(@Body() dto: SignupBySsoDto) {

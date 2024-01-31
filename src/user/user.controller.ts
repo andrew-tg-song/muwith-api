@@ -1,9 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  UseInterceptors,
+  UploadedFile,
+  UnsupportedMediaTypeException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RequestInterface } from 'src/interface/request';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as path from 'path';
 
 @Controller('user')
 export class UserController {
@@ -12,7 +27,22 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMyProfile(@Request() req: RequestInterface) {
-    return await this.userService.findOne(req.user.id);
+    return req.user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('profile-image')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadProfileImage(@Request() req: RequestInterface, @UploadedFile() file: Express.Multer.File) {
+    const allowFileFormats = /jpeg|jpg|png|gif/;
+    const fileExt = path.extname(file.originalname);
+    const isAllowExt = allowFileFormats.test(fileExt.toLowerCase());
+    const isAllowMime = allowFileFormats.test(file.mimetype);
+    const isAllowFormat = isAllowExt && isAllowMime;
+    if (!isAllowFormat) {
+      throw new UnsupportedMediaTypeException();
+    }
+    return this.userService.uploadProfileImage(req.user, file.buffer, fileExt);
   }
 
   @Post()

@@ -10,8 +10,8 @@ import { JwtPayload } from './jwt.strategy';
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
-    private jwtService: JwtService,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
   ) {}
 
   private issueToken(user: User) {
@@ -38,6 +38,9 @@ export class AuthService {
   }
 
   private async verifySsoToken(platform: SsoPlatform, token: string) {
+    if (platform === 'develop') {
+      return token;
+    }
     if (platform === 'google') {
       return await this.verifyGoogleIdToken(token);
     }
