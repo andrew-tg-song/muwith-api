@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
 import { S3Service } from 'src/aws/s3/s3.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -15,7 +16,12 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    return await this.userRepository.save(createUserDto);
+    const loginIdHash = crypto.createHash('sha256').update(createUserDto.loginId).digest('hex');
+    const profileImage = `https://gravatar.com/avatar/${loginIdHash}?d=retro`;
+    return await this.userRepository.save({
+      ...createUserDto,
+      profileImage,
+    });
   }
 
   async findAll() {
@@ -43,6 +49,7 @@ export class UserService {
   async uploadProfileImage(user: User, file: Buffer, fileExt: string) {
     const fileName = v4() + fileExt;
     const response = await this.s3Service.upload(file, { objectPath: fileName });
-    return response;
+    user.profileImage = response.objectUrl;
+    return await this.userRepository.save(user);
   }
 }
