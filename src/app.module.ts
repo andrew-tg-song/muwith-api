@@ -7,6 +7,11 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { AwsModule } from './aws/aws.module';
+import { SpotifyModule } from './spotify/spotify.module';
+import { TrackModule } from './track/track.module';
+import { AlbumModule } from './album/album.module';
+import { ArtistModule } from './artist/artist.module';
+import { GenreModule } from './genre/genre.module';
 
 @Module({
   imports: [
@@ -23,6 +28,11 @@ import { AwsModule } from './aws/aws.module';
     UserModule,
     AuthModule,
     AwsModule,
+    SpotifyModule,
+    TrackModule,
+    AlbumModule,
+    ArtistModule,
+    GenreModule,
   ],
   controllers: [AppController],
   providers: [AppService],

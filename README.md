@@ -1,73 +1,48 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# M U W I T H
+## Music Application REST API
+This is a RESTful API built with NestJS that provides music-related functionalities based on Spotify and YouTube APIs.
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Introduction
+The Music Application REST API is designed to provide a comprehensive set of endpoints for accessing music data from Spotify and YouTube. It allows users to search for songs, artists, albums, playlists, and more, as well as retrieve information about them.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Project Overview
+The project is built using NestJS, a progressive Node.js framework for building efficient and scalable server-side applications. It leverages the power of TypeScript and provides a robust set of features for building modern APIs.
 
-## Description
+## Features
+Search for songs, artists, albums, playlists, and more on Spotify.
+Retrieve detailed information about songs, artists, albums, and playlists.
+Get recommendations based on user's preferences.
+Access music metadata such as track name, artist name, album name, release date, and more.
+Usage
+To use the Music Application REST API, you will need to have an API key for both Spotify and YouTube. You can obtain these keys by signing up for the respective developer accounts. Once you have the keys, you can make requests to the API endpoints using an HTTP client of your choice.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+**Please note that this project is intended for educational purposes only and must not be used for commercial purposes.**
 
-## Installation
-
-```bash
-$ npm install
-```
-
-## Running the app
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Contributing
+Contributions are welcome! If you have any ideas or suggestions for improving the Music Application REST API, feel free to open a pull request or issue.
 
 ## License
+The Music Application REST API is licensed under the MIT license. See the LICENSE file for more information.
 
-Nest is [MIT licensed](LICENSE).
+## Implementation List
+- [x] Authentication
+  - [x] JWT Guard
+  - [x] Sign-up with Google OAuth
+  - [ ] Sign-up with Kakao OAuth
+  - [ ] Sign-up internally
+  - [ ] Authorization system
+  - [x] Documentation
+- [x] Track
+  - [ ] Youtube link of the track
+  - [ ] Documentation
+- [ ] Album
+  - [ ] Documentation
+- [ ] Artist
+  - [ ] Documentation
+- [ ] Search
+- [ ] Playlist
+  - [ ] Documentation
+- [ ] Users
+- [ ] Recommendation tracks
+  - [ ] Documentation
+- [ ] Indexing

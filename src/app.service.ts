@@ -5,6 +5,6 @@ export class AppService {
   constructor() {}
 
   getHello() {
-    return 'HELLO!';
+    return 'HI, I AM MUWITH API!';
   }
 }

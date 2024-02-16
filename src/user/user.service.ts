@@ -24,10 +24,12 @@ export class UserService {
     });
   }
 
+  // For debug
   async findAll() {
     return await this.userRepository.find();
   }
 
+  // For debug
   async findOne(id: number) {
     return await this.userRepository.findOneBy({ id });
   }
@@ -36,12 +38,14 @@ export class UserService {
     return await this.userRepository.findOneBy({ loginId });
   }
 
+  // For debug
   async update(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.findOne(id);
     Object.assign(user, updateUserDto);
     return await this.userRepository.save(user);
   }
 
+  // For debug
   async remove(id: number) {
     return await this.userRepository.delete(id);
   }

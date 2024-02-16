@@ -1,7 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Constructable } from 'src/interface/constructable';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('USER')
-export class User {
+export class User extends Constructable<User> {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
@@ -13,4 +14,10 @@ export class User {
 
   @Column()
   profileImage: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
