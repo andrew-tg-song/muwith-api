@@ -35,7 +35,7 @@ The Music Application REST API is licensed under the MIT license. See the LICENS
 - [x] Track
   - [ ] Youtube link of the track
   - [ ] Documentation
-- [ ] Album
+- [x] Album
   - [ ] Documentation
 - [ ] Artist
   - [ ] Documentation
