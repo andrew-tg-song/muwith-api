@@ -11,25 +11,10 @@ export interface GetTrackResponse {
     name: string;
     release_date: string;
     release_date_precision: string;
-    artists: {
-      href: string;
-      id: string;
-      name: string;
-    }[];
   };
   artists: {
-    followers: {
-      total: number;
-    };
-    genres: string[];
     id: string;
-    images: {
-      url: string;
-      height: number;
-      width: number;
-    }[];
     name: string;
-    popularity: number;
   }[];
   id: string;
   name: string;

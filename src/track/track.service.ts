@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { SpotifyTrackService } from 'src/spotify/spotify-track/spotify-track.service';
 import { Track } from './entities/track.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,16 +8,18 @@ import { ArtistService } from 'src/artist/artist.service';
 
 @Injectable()
 export class TrackService {
-  private readonly TRACK_RENEWAL_PERIOD = 1000 * 60 * 60 * 24 * 7;
+  private readonly TRACK_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 7;
 
   constructor(
     @InjectRepository(Track) private readonly trackRepository: Repository<Track>,
     private readonly spotifyTrackService: SpotifyTrackService,
+    @Inject(forwardRef(() => AlbumService))
     private readonly albumService: AlbumService,
     private readonly artistService: ArtistService,
   ) {}
 
   async upsert(track: Partial<Track>) {
+    // TODO: Do not use save method.
     return await this.trackRepository.save(track);
   }
 
@@ -61,7 +63,7 @@ export class TrackService {
       where: { id: trackId },
       relations: ['album', 'artists'],
     });
-    if (track == null || Date.now() > track.collectedAt.getTime() + this.TRACK_RENEWAL_PERIOD) {
+    if (track == null || Date.now() > track.collectedAt.getTime() + this.TRACK_RE_COLLECTING_PERIOD) {
       track = await this.updateTrackAsSpotify(trackId);
     }
     return track as Required<Track>;

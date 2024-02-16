@@ -32,8 +32,8 @@ export class Track extends Constructable<Track> {
   @Column()
   duration: number; // in milliseconds
 
-  @Column()
-  popularity: number;
+  @Column({ nullable: true })
+  popularity?: number;
 
   @Column({ nullable: true })
   collectedAt?: Date;
