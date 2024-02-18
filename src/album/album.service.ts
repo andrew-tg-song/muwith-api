@@ -6,6 +6,7 @@ import { TrackService } from 'src/track/track.service';
 import { SpotifyAlbumService } from 'src/spotify/spotify-album/spotify-album.service';
 import { ArtistService } from 'src/artist/artist.service';
 import { Genre } from 'src/genre/entities/genre.entity';
+import { Track } from 'src/track/entities/track.entity';
 
 @Injectable()
 export class AlbumService {
@@ -26,17 +27,18 @@ export class AlbumService {
   async updateAlbumAsSpotify(albumId: string) {
     const spotifyAlbum = await this.spotifyAlbumService.getAlbum(albumId);
 
-    const tracks = await Promise.all(
-      spotifyAlbum.tracks.items.map(async (track) => {
-        const artists = await Promise.all(
-          track.artists.map(async (artist) => {
-            return await this.artistService.upsert({
-              id: artist.id,
-              name: artist.name,
-            });
-          }),
-        );
-        return await this.trackService.upsert({
+    const tracks: Track[] = [];
+    for (const track of spotifyAlbum.tracks.items) {
+      const artists = await Promise.all(
+        track.artists.map(async (artist) => {
+          return await this.artistService.upsert({
+            id: artist.id,
+            name: artist.name,
+          });
+        }),
+      );
+      tracks.push(
+        await this.trackService.upsert({
           id: track.id,
           name: track.name,
           explicit: track.explicit,
@@ -44,9 +46,9 @@ export class AlbumService {
           trackNumber: track.track_number,
           duration: track.duration_ms,
           artists,
-        });
-      }),
-    );
+        }),
+      );
+    }
 
     const artists = await Promise.all(
       spotifyAlbum.artists.map(async (artist) => {
