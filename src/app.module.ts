@@ -12,6 +12,7 @@ import { TrackModule } from './track/track.module';
 import { AlbumModule } from './album/album.module';
 import { ArtistModule } from './artist/artist.module';
 import { GenreModule } from './genre/genre.module';
+import { YoutubeModule } from './youtube/youtube.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { GenreModule } from './genre/genre.module';
     AlbumModule,
     ArtistModule,
     GenreModule,
+    YoutubeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

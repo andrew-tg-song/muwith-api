@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AlbumService } from 'src/album/album.service';
 import { ArtistService } from 'src/artist/artist.service';
+import { YoutubeService } from 'src/youtube/youtube.service';
 
 @Injectable()
 export class TrackService {
@@ -13,6 +14,7 @@ export class TrackService {
   constructor(
     @InjectRepository(Track) private readonly trackRepository: Repository<Track>,
     private readonly spotifyTrackService: SpotifyTrackService,
+    private readonly youtubeService: YoutubeService,
     @Inject(forwardRef(() => AlbumService))
     private readonly albumService: AlbumService,
     @Inject(forwardRef(() => ArtistService))
@@ -20,11 +22,10 @@ export class TrackService {
   ) {}
 
   async upsert(track: Partial<Track>) {
-    // TODO: Do not use save method.
     return await this.trackRepository.save(track);
   }
 
-  private async updateTrackAsSpotify(trackId: string) {
+  private async updateTrackAsSpotifyWithYoutube(trackId: string) {
     const spotifyTrack = await this.spotifyTrackService.getTrack(trackId);
 
     const album = await this.albumService.upsert({
@@ -45,6 +46,10 @@ export class TrackService {
       }),
     );
 
+    const youtubeUrl = await this.youtubeService.getFirstVideoUrlBySearch(
+      `${spotifyTrack.artists[0].name} ${spotifyTrack.name} audio`,
+    );
+
     return await this.upsert({
       id: spotifyTrack.id,
       name: spotifyTrack.name,
@@ -53,6 +58,7 @@ export class TrackService {
       trackNumber: spotifyTrack.track_number,
       duration: spotifyTrack.duration_ms,
       popularity: spotifyTrack.popularity,
+      youtubeUrl,
       collectedAt: new Date(),
       album,
       artists,
@@ -69,7 +75,7 @@ export class TrackService {
       track.collectedAt == null ||
       Date.now() > track.collectedAt.getTime() + this.TRACK_RE_COLLECTING_PERIOD
     ) {
-      track = await this.updateTrackAsSpotify(trackId);
+      track = await this.updateTrackAsSpotifyWithYoutube(trackId);
     }
     return track as Required<Track>;
   }
