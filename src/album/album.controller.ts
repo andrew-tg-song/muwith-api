@@ -6,13 +6,13 @@ export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
   @Get(':id')
-  getTrack(@Param('id') id: string) {
+  getAlbum(@Param('id') id: string) {
     return this.albumService.getAlbum(id);
   }
 
   // For debug
   @Get()
-  getTracks() {
+  getAlbums() {
     return this.albumService.getAlbums();
   }
 }

@@ -24,6 +24,12 @@ export class Artist extends Constructable<Artist> {
   @Column({ nullable: true })
   collectedAt?: Date;
 
+  @Column({ nullable: true })
+  collectedTopTracksAt?: Date;
+
+  @Column({ nullable: true })
+  collectedRelatedArtistsAt?: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

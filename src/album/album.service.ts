@@ -17,6 +17,7 @@ export class AlbumService {
     private readonly spotifyAlbumService: SpotifyAlbumService,
     @Inject(forwardRef(() => TrackService))
     private readonly trackService: TrackService,
+    @Inject(forwardRef(() => ArtistService))
     private readonly artistService: ArtistService,
   ) {}
 
@@ -24,11 +25,12 @@ export class AlbumService {
     return await this.albumRepository.save(album);
   }
 
-  async updateAlbumAsSpotify(albumId: string) {
+  private async updateAlbumAsSpotify(albumId: string) {
     const spotifyAlbum = await this.spotifyAlbumService.getAlbum(albumId);
+    const spotifyAlbumTracks = await this.spotifyAlbumService.getAlbumAllTracks(albumId);
 
     const tracks: Track[] = [];
-    for (const track of spotifyAlbum.tracks.items) {
+    for (const track of spotifyAlbumTracks.items) {
       const artists = await Promise.all(
         track.artists.map(async (artist) => {
           return await this.artistService.upsert({
@@ -82,7 +84,11 @@ export class AlbumService {
       where: { id: albumId },
       relations: ['tracks', 'artists', 'genres'],
     });
-    if (album == null || Date.now() > album.collectedAt.getTime() + this.ALBUM_RE_COLLECTING_PERIOD) {
+    if (
+      album == null ||
+      album.collectedAt == null ||
+      Date.now() > album.collectedAt.getTime() + this.ALBUM_RE_COLLECTING_PERIOD
+    ) {
       album = await this.updateAlbumAsSpotify(albumId);
     }
     return album as Required<Album>;

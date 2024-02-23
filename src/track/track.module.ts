@@ -8,7 +8,12 @@ import { AlbumModule } from 'src/album/album.module';
 import { ArtistModule } from 'src/artist/artist.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Track]), SpotifyModule, forwardRef(() => AlbumModule), ArtistModule],
+  imports: [
+    TypeOrmModule.forFeature([Track]),
+    SpotifyModule,
+    forwardRef(() => AlbumModule),
+    forwardRef(() => ArtistModule),
+  ],
   controllers: [TrackController],
   providers: [TrackService],
   exports: [TrackService],

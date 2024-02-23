@@ -15,6 +15,7 @@ export class TrackService {
     private readonly spotifyTrackService: SpotifyTrackService,
     @Inject(forwardRef(() => AlbumService))
     private readonly albumService: AlbumService,
+    @Inject(forwardRef(() => ArtistService))
     private readonly artistService: ArtistService,
   ) {}
 
@@ -23,7 +24,7 @@ export class TrackService {
     return await this.trackRepository.save(track);
   }
 
-  async updateTrackAsSpotify(trackId: string) {
+  private async updateTrackAsSpotify(trackId: string) {
     const spotifyTrack = await this.spotifyTrackService.getTrack(trackId);
 
     const album = await this.albumService.upsert({
@@ -63,7 +64,11 @@ export class TrackService {
       where: { id: trackId },
       relations: ['album', 'artists'],
     });
-    if (track == null || Date.now() > track.collectedAt.getTime() + this.TRACK_RE_COLLECTING_PERIOD) {
+    if (
+      track == null ||
+      track.collectedAt == null ||
+      Date.now() > track.collectedAt.getTime() + this.TRACK_RE_COLLECTING_PERIOD
+    ) {
       track = await this.updateTrackAsSpotify(trackId);
     }
     return track as Required<Track>;
