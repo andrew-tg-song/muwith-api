@@ -13,7 +13,7 @@ import { PlaylistSetPlaylist } from './entities/playlist-set-playlist.entity';
 
 @Injectable()
 export class PlaylistService {
-  private readonly PLAYLIST_RE_COLLECTING_PERIOD = 1000; // * 60 * 60 * 24 * 1;
+  private readonly PLAYLIST_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 1;
   private readonly PLAYLIST_SETS_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 1;
   private readonly PLAYLIST_SET_PLAYLISTS_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 1;
 

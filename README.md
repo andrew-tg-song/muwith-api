@@ -46,6 +46,7 @@ The Music Application REST API is licensed under the MIT license. See the LICENS
 - [x] Playlist
   - [x] Playlist set
   - [ ] Documentation
+- [ ] Concurrent request
 - [ ] Search
   - [ ] Documentation
 - [ ] Users
