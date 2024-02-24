@@ -9,10 +9,4 @@ export class AlbumController {
   getAlbum(@Param('id') id: string) {
     return this.albumService.getAlbum(id);
   }
-
-  // For debug
-  @Get()
-  getAlbums() {
-    return this.albumService.getAlbums();
-  }
 }

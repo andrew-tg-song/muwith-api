@@ -79,9 +79,4 @@ export class TrackService {
     }
     return track as Required<Track>;
   }
-
-  // For debug
-  async getTracks() {
-    return await this.trackRepository.find();
-  }
 }

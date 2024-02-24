@@ -93,9 +93,4 @@ export class AlbumService {
     }
     return album as Required<Album>;
   }
-
-  // For debug
-  async getAlbums() {
-    return await this.albumRepository.find();
-  }
 }

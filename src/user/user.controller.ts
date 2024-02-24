@@ -2,10 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
   UseGuards,
   Request,
   UseInterceptors,
@@ -13,8 +9,6 @@ import {
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { GuardedRequest } from 'src/interface/request';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -43,35 +37,5 @@ export class UserController {
       throw new UnsupportedMediaTypeException();
     }
     return this.userService.uploadProfileImage(req.user, file.buffer, fileExt);
-  }
-
-  // For debug
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
-
-  // For debug
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  // For debug
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  // For debug
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  // For debug
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
   }
 }

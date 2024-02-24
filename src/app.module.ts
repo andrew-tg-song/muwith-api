@@ -13,6 +13,7 @@ import { AlbumModule } from './album/album.module';
 import { ArtistModule } from './artist/artist.module';
 import { GenreModule } from './genre/genre.module';
 import { YoutubeModule } from './youtube/youtube.module';
+import { PlaylistModule } from './playlist/playlist.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { YoutubeModule } from './youtube/youtube.module';
     ArtistModule,
     GenreModule,
     YoutubeModule,
+    PlaylistModule,
   ],
   controllers: [AppController],
   providers: [AppService],

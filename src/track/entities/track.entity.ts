@@ -35,7 +35,7 @@ export class Track extends Constructable<Track> {
   @Column({ nullable: true })
   popularity?: number;
 
-  @Column()
+  @Column({ nullable: true })
   youtubeUrl?: string;
 
   @Column({ nullable: true })

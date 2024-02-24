@@ -5,8 +5,6 @@ export interface GetTrackResponse {
     id: string;
     images: {
       url: string;
-      height: number;
-      width: number;
     }[];
     name: string;
     release_date: string;

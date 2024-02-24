@@ -21,6 +21,9 @@ To use the Music Application REST API, you will need to have an API key for both
 ## Contributing
 Contributions are welcome! If you have any ideas or suggestions for improving the Music Application REST API, feel free to open a pull request or issue.
 
+## Documents
+- Korean: https://muwith-api-docs.vercel.app/start-here/getting-started/
+
 ## License
 The Music Application REST API is licensed under the MIT license. See the LICENSE file for more information.
 
@@ -33,16 +36,22 @@ The Music Application REST API is licensed under the MIT license. See the LICENS
   - [ ] Authorization system
   - [x] Documentation
 - [x] Track
-  - [ ] Youtube link of the track
+  - [x] Youtube link of the track (with headless browser)
+  - [ ] Youtube API integration
   - [ ] Documentation
 - [x] Album
   - [ ] Documentation
-- [ ] Artist
+- [x] Artist
+  - [ ] Documentation
+- [x] Playlist
+  - [ ] Playlist set
   - [ ] Documentation
 - [ ] Search
-- [ ] Playlist
   - [ ] Documentation
 - [ ] Users
+  - [ ] Documentation
 - [ ] Recommendation tracks
   - [ ] Documentation
-- [ ] Indexing
+- [ ] Performance Optimization
+  - [ ] Indexing
+  - [ ] Improve expensive queries 

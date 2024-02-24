@@ -9,10 +9,4 @@ export class TrackController {
   getTrack(@Param('id') id: string) {
     return this.trackService.getTrack(id);
   }
-
-  // For debug
-  @Get()
-  getTracks() {
-    return this.trackService.getTracks();
-  }
 }
