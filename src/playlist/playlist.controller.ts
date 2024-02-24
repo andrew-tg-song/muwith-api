@@ -6,7 +6,7 @@ export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
   @Get(':id')
-  getTrack(@Param('id') id: string) {
+  getPlaylist(@Param('id') id: string) {
     return this.playlistService.getPlaylist(id);
   }
 }

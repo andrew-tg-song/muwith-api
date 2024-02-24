@@ -4,14 +4,23 @@ import { PlaylistController } from './playlist.controller';
 import { SpotifyModule } from 'src/spotify/spotify.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Playlist } from './entities/playlist.entity';
-import { PlaylistTrack } from './entities/playlist-track';
+import { PlaylistTrack } from './entities/playlist-track.entity';
 import { TrackModule } from 'src/track/track.module';
 import { ArtistModule } from 'src/artist/artist.module';
 import { AlbumModule } from 'src/album/album.module';
+import { PlaylistSet } from './entities/playlist-set.entity';
+import { PlaylistSetPlaylist } from './entities/playlist-set-playlist.entity';
+import { PlaylistSetController } from './playlist-set.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Playlist, PlaylistTrack]), SpotifyModule, TrackModule, AlbumModule, ArtistModule],
+  imports: [
+    TypeOrmModule.forFeature([Playlist, PlaylistTrack, PlaylistSet, PlaylistSetPlaylist]),
+    SpotifyModule,
+    TrackModule,
+    AlbumModule,
+    ArtistModule,
+  ],
   providers: [PlaylistService],
-  controllers: [PlaylistController],
+  controllers: [PlaylistController, PlaylistSetController],
 })
 export class PlaylistModule {}

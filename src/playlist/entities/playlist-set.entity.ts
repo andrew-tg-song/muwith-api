@@ -1,8 +1,8 @@
 import { Constructable } from 'src/interface/constructable';
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('PLAYLIST')
-export class Playlist extends Constructable<Playlist> {
+@Entity('PLAYLSIT_SET')
+export class PlaylistSet extends Constructable<PlaylistSet> {
   @PrimaryColumn()
   id: string;
 
@@ -10,16 +10,16 @@ export class Playlist extends Constructable<Playlist> {
   name: string;
 
   @Column()
-  description: string;
-
-  @Column({ nullable: true })
-  followers?: number;
+  thumbnailUrl?: string;
 
   @Column()
-  thumbnailUrl: string;
+  order: number;
+
+  @Column()
+  collectedAt: Date;
 
   @Column({ nullable: true })
-  collectedAt?: Date;
+  collectedPlaylistsAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;
