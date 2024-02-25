@@ -14,6 +14,8 @@ import { ArtistModule } from './artist/artist.module';
 import { GenreModule } from './genre/genre.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { PlaylistModule } from './playlist/playlist.module';
+import { SearchModule } from './search/search.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { PlaylistModule } from './playlist/playlist.module';
       dropSchema: false,
     }),
     ConfigModule.forRoot({ isGlobal: true }),
+    CacheModule.register({ isGlobal: true }),
     UserModule,
     AuthModule,
     AwsModule,
@@ -37,6 +40,7 @@ import { PlaylistModule } from './playlist/playlist.module';
     GenreModule,
     YoutubeModule,
     PlaylistModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

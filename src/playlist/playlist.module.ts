@@ -22,5 +22,6 @@ import { PlaylistSetController } from './playlist-set.controller';
   ],
   providers: [PlaylistService],
   controllers: [PlaylistController, PlaylistSetController],
+  exports: [PlaylistService],
 })
 export class PlaylistModule {}
