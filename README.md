@@ -57,3 +57,5 @@ The Music Application REST API is licensed under the MIT license. See the LICENS
 - [ ] Performance Optimization
   - [ ] Indexing
   - [ ] Improve expensive queries 
+- [ ] Errors
+  - [ ] Spotify task in spotify task
