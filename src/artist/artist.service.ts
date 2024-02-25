@@ -10,6 +10,7 @@ import { Track } from 'src/track/entities/track.entity';
 import { ArtistTopTrack } from './entities/artist-top-track.entity';
 import { ArtistRelatedArtist } from './entities/artist-related-artist.entity';
 import { Album } from 'src/album/entities/album.entity';
+import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 
 @Injectable()
 export class ArtistService {
@@ -34,6 +35,7 @@ export class ArtistService {
     return await this.artistRepository.save(artist);
   }
 
+  @SpotifyTask()
   private async updateArtistAsSpotify(artistId: string) {
     const spotifyArtist = await this.spotifyArtistService.getArtist(artistId);
     const spotifyArtistAlbums = await this.spotifyArtistService.getArtistAllAlbums(artistId);
@@ -79,6 +81,7 @@ export class ArtistService {
     });
   }
 
+  @SpotifyTask()
   private async updateArtistTopTracksAsSpotify(artist: Artist) {
     const spotifyArtistTopTracks = await this.spotifyArtistService.getArtistTopTracks(artist.id);
 
@@ -138,6 +141,7 @@ export class ArtistService {
     return artistTopTracks;
   }
 
+  @SpotifyTask()
   private async updateArtistRelatedArtistsAsSpotify(artist: Artist) {
     const spotifyArtistRelatedArtists = await this.spotifyArtistService.getArtistRelatedArtist(artist.id);
 

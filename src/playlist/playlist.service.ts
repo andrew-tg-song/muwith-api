@@ -10,6 +10,7 @@ import { ArtistService } from 'src/artist/artist.service';
 import { AlbumService } from 'src/album/album.service';
 import { PlaylistSet } from './entities/playlist-set.entity';
 import { PlaylistSetPlaylist } from './entities/playlist-set-playlist.entity';
+import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 
 @Injectable()
 export class PlaylistService {
@@ -33,6 +34,7 @@ export class PlaylistService {
     return await this.playlistRepository.save(playlist);
   }
 
+  @SpotifyTask()
   private async updatePlaylistAsSpotify(playlistId: string) {
     const spotifyPlaylist = await this.spotifyPlaylistService.getPlaylist(playlistId);
 
@@ -48,7 +50,6 @@ export class PlaylistService {
     const tracks: Track[] = [];
     for (const spotifyTrack of spotifyPlaylist.tracks.items) {
       const track = spotifyTrack.track;
-      console.info(spotifyTrack);
       if (track.episode) {
         continue;
       }
@@ -103,14 +104,13 @@ export class PlaylistService {
       }),
     );
 
-    console.info(tracks);
-
     return {
       ...playlist,
       tracks,
     };
   }
 
+  @SpotifyTask()
   private async updatePlaylistSetsAsSpotify() {
     const spotifyPlaylistSets = await this.spotifyPlaylistService.getAllPlaylistSets();
 
@@ -128,6 +128,7 @@ export class PlaylistService {
     );
   }
 
+  @SpotifyTask()
   private async updatePlaylistSetPlaylistsAsSpotify(playlistSet: PlaylistSet) {
     const spotifyPlaylistSetPlaylists = await this.spotifyPlaylistService.getAllPlaylistSetPlaylists(playlistSet.id);
 

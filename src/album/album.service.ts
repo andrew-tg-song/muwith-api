@@ -7,6 +7,7 @@ import { SpotifyAlbumService } from 'src/spotify/spotify-album/spotify-album.ser
 import { ArtistService } from 'src/artist/artist.service';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { Track } from 'src/track/entities/track.entity';
+import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 
 @Injectable()
 export class AlbumService {
@@ -25,6 +26,7 @@ export class AlbumService {
     return await this.albumRepository.save(album);
   }
 
+  @SpotifyTask()
   private async updateAlbumAsSpotify(albumId: string) {
     const spotifyAlbum = await this.spotifyAlbumService.getAlbum(albumId);
     const spotifyAlbumTracks = await this.spotifyAlbumService.getAlbumAllTracks(albumId);

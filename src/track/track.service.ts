@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { AlbumService } from 'src/album/album.service';
 import { ArtistService } from 'src/artist/artist.service';
 import { YoutubeService } from 'src/youtube/youtube.service';
+import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 
 @Injectable()
 export class TrackService {
@@ -25,6 +26,7 @@ export class TrackService {
     return await this.trackRepository.save(track);
   }
 
+  @SpotifyTask()
   private async updateTrackAsSpotifyWithYoutube(trackId: string) {
     const spotifyTrack = await this.spotifyTrackService.getTrack(trackId);
 
