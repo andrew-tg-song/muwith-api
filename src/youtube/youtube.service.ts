@@ -4,7 +4,7 @@ import puppeteer, { Page } from 'puppeteer';
 
 @Injectable()
 export class YoutubeService {
-  private readonly PAGE_POOL_COUNT = 3;
+  private readonly PAGE_POOL_COUNT = 1;
   private readonly headlessBrowserPages: {
     page: Page;
     lock: boolean;
