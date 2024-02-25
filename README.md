@@ -49,7 +49,7 @@ The Music Application REST API is licensed under the MIT license. See the LICENS
   - [x] Documentation
 - [x] Concurrent request
 - [x] Search
-  - [ ] Documentation
+  - [x] Documentation
 - [ ] Users
   - [ ] Documentation
 - [ ] Recommendation tracks
