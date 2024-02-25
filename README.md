@@ -38,14 +38,15 @@ The Music Application REST API is licensed under the MIT license. See the LICENS
 - [x] Track
   - [x] Youtube link of the track (with headless browser)
   - [ ] Youtube API integration
-  - [ ] Documentation
+  - [x] Documentation
 - [x] Album
-  - [ ] Documentation
+  - [x] Documentation
 - [x] Artist
-  - [ ] Documentation
+  - [ ] Filter albumType in get artist
+  - [x] Documentation
 - [x] Playlist
   - [x] Playlist set
-  - [ ] Documentation
+  - [x] Documentation
 - [x] Concurrent request
 - [ ] Search
   - [ ] Documentation
