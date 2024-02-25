@@ -46,7 +46,7 @@ The Music Application REST API is licensed under the MIT license. See the LICENS
 - [x] Playlist
   - [x] Playlist set
   - [ ] Documentation
-- [ ] Concurrent request
+- [x] Concurrent request
 - [ ] Search
   - [ ] Documentation
 - [ ] Users
@@ -55,7 +55,8 @@ The Music Application REST API is licensed under the MIT license. See the LICENS
   - [ ] Documentation
 - [ ] Transaction
 - [ ] Performance Optimization
+  - [ ] Spotify task with youtube task locking delay
   - [ ] Indexing
-  - [ ] Improve expensive queries 
+  - [ ] Improve expensive queries
 - [ ] Errors
   - [ ] Spotify task in spotify task
