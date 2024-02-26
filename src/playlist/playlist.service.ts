@@ -11,6 +11,7 @@ import { AlbumService } from 'src/album/album.service';
 import { PlaylistSet } from './entities/playlist-set.entity';
 import { PlaylistSetPlaylist } from './entities/playlist-set-playlist.entity';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
+import { ArtistAlbum } from '../artist/entities/artist-album.entity';
 
 @Injectable()
 export class PlaylistService {
@@ -19,6 +20,7 @@ export class PlaylistService {
   private readonly PLAYLIST_SET_PLAYLISTS_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 1;
 
   constructor(
+    @InjectRepository(ArtistAlbum) private readonly artistAlbumRepository: Repository<ArtistAlbum>,
     @InjectRepository(Playlist) private readonly playlistRepository: Repository<Playlist>,
     @InjectRepository(PlaylistTrack) private readonly playlistTrackRepository: Repository<PlaylistTrack>,
     @InjectRepository(PlaylistSet) private readonly playlistSetRepository: Repository<PlaylistSet>,
@@ -53,7 +55,7 @@ export class PlaylistService {
       if (track.episode) {
         continue;
       }
-      const albumArtists = await Promise.all(
+      const artistsInAlbum = await Promise.all(
         track.album.artists.map(async (artist) => {
           return await this.artistService.upsert({
             id: artist.id,
@@ -68,8 +70,27 @@ export class PlaylistService {
         totalTracks: track.album.total_tracks,
         thumbnailUrl: track.album.images[0]?.url,
         releaseDate: track.album.release_date,
-        artists: albumArtists,
       });
+      await Promise.all(
+        artistsInAlbum.map(async (artist) => {
+          // Avoid duplicate creation
+          const artistAlbum = await this.artistAlbumRepository.findOne({
+            where: {
+              artist: { id: artist.id },
+              album: { id: album.id },
+            },
+            relations: ['artist'],
+          });
+          if (!artistAlbum) {
+            const artistAlbum = new ArtistAlbum({
+              artist,
+              album,
+              albumGroup: album.albumType === 'compilation' ? 'indirect' : 'direct',
+            });
+            await this.artistAlbumRepository.save(artistAlbum);
+          }
+        }),
+      );
       const artists = await Promise.all(
         track.artists.map(async (artist) => {
           return await this.artistService.upsert({
@@ -172,7 +193,24 @@ export class PlaylistService {
     });
     return {
       ...(playlist as Required<Playlist>),
-      tracks: playlistTracks.map((playlistTrack) => playlistTrack.track),
+      tracks: await Promise.all(
+        playlistTracks.map(async (playlistTrack) => {
+          const track = playlistTrack.track;
+          const artistAlbumsInAlbum = await this.artistAlbumRepository.find({
+            where: {
+              album: { id: track.album.id },
+            },
+            relations: ['artist'],
+          });
+          return {
+            ...track,
+            album: {
+              ...track.album,
+              artists: artistAlbumsInAlbum.map((artistAlbum) => artistAlbum.artist),
+            },
+          };
+        }),
+      ),
     };
   }
 

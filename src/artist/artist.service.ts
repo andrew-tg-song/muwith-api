@@ -1,16 +1,16 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { Artist } from './entities/artist.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SpotifyArtistService } from 'src/spotify/spotify-artist/spotify-artist.service';
+import { ArtistAlbumGroup, SpotifyArtistService } from 'src/spotify/spotify-artist/spotify-artist.service';
 import { AlbumService } from 'src/album/album.service';
 import { TrackService } from 'src/track/track.service';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { Track } from 'src/track/entities/track.entity';
 import { ArtistTopTrack } from './entities/artist-top-track.entity';
 import { ArtistRelatedArtist } from './entities/artist-related-artist.entity';
-import { Album } from 'src/album/entities/album.entity';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
+import { ArtistAlbum } from './entities/artist-album.entity';
 
 @Injectable()
 export class ArtistService {
@@ -19,8 +19,8 @@ export class ArtistService {
   private readonly ARTIST_RELATED_ARTISTS_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 1;
 
   constructor(
-    @InjectRepository(Album) private readonly albumRepository: Repository<Album>,
     @InjectRepository(Artist) private readonly artistRepository: Repository<Artist>,
+    @InjectRepository(ArtistAlbum) private readonly artistAlbumRepository: Repository<ArtistAlbum>,
     @InjectRepository(ArtistTopTrack) private readonly artistTopTrackRepository: Repository<ArtistTopTrack>,
     @InjectRepository(ArtistRelatedArtist)
     private readonly artistRelatedArtistRepository: Repository<ArtistRelatedArtist>,
@@ -36,23 +36,42 @@ export class ArtistService {
   }
 
   @SpotifyTask()
-  private async updateArtistAsSpotify(artistId: string) {
+  private async updateArtistAsSpotify(artistId: string, albumGroup: ArtistAlbumGroup) {
     const spotifyArtist = await this.spotifyArtistService.getArtist(artistId);
-    const spotifyArtistAlbums = await this.spotifyArtistService.getArtistAllAlbums(artistId);
+    const spotifyArtistAlbums = await this.spotifyArtistService.getArtistAllAlbums(artistId, albumGroup);
 
-    const artist = await this.upsert({
+    const newArtist = new Artist({
       id: spotifyArtist.id,
       name: spotifyArtist.name,
       thumbnailUrl: spotifyArtist.images[0]?.url,
       followers: spotifyArtist.followers.total,
       popularity: spotifyArtist.popularity,
-      collectedAt: new Date(),
       genres: spotifyArtist.genres.map((genre) => new Genre({ name: genre })),
     });
+    switch (albumGroup) {
+      case 'direct':
+        newArtist.collectedDirectAlbumsAt = new Date();
+        break;
+      case 'indirect':
+        newArtist.collectedIndirectAlbumsAt = new Date();
+        break;
+      case 'both':
+        newArtist.collectedDirectAlbumsAt = new Date();
+        newArtist.collectedIndirectAlbumsAt = new Date();
+        break;
+    }
+    const artist = await this.upsert(newArtist);
 
+    const artistAlbumsDeleteCriteria: FindOptionsWhere<ArtistAlbum> = {
+      artist: { id: artist.id },
+    };
+    if (albumGroup !== 'both') {
+      artistAlbumsDeleteCriteria.albumGroup = albumGroup;
+    }
+    await this.artistAlbumRepository.delete(artistAlbumsDeleteCriteria);
     await Promise.all(
       spotifyArtistAlbums.items.map(async (spotifyAlbum) => {
-        await this.albumService.upsert({
+        const album = await this.albumService.upsert({
           id: spotifyAlbum.id,
           name: spotifyAlbum.name,
           albumType: spotifyAlbum.album_type,
@@ -60,25 +79,16 @@ export class ArtistService {
           releaseDate: spotifyAlbum.release_date,
           totalTracks: spotifyAlbum.total_tracks,
         });
-        const album = await this.albumRepository.findOne({
-          where: { id: spotifyAlbum.id },
-          relations: ['artists'],
+        const artistAlbum = new ArtistAlbum({
+          artist,
+          album,
+          albumGroup: album.albumType === 'compilation' ? 'indirect' : 'direct',
         });
-        const artistIndex = album.artists.findIndex((artistInAlbum) => artistInAlbum.id === artist.id);
-        if (artistIndex === -1) {
-          album.artists.push(artist);
-          await this.albumService.upsert({
-            id: album.id,
-            artists: album.artists,
-          });
-        }
+        await this.artistAlbumRepository.save(artistAlbum);
       }),
     );
 
-    return await this.artistRepository.findOne({
-      where: { id: artistId },
-      relations: ['albums', 'genres'],
-    });
+    return artist;
   }
 
   @SpotifyTask()
@@ -114,14 +124,13 @@ export class ArtistService {
           trackNumber: track.track_number,
           duration: track.duration_ms,
           popularity: track.popularity,
-          collectedAt: new Date(),
           album,
           artists,
         }),
       );
     }
 
-    await this.artistTopTrackRepository.delete({ artist });
+    await this.artistTopTrackRepository.delete({ artist: { id: artist.id } });
     const artistTopTracks = await Promise.all(
       tracks.map(async (track, i) => {
         const artistTopTrack = new ArtistTopTrack({
@@ -158,7 +167,7 @@ export class ArtistService {
       arrivalArtists.push(arrivalArtist);
     }
 
-    await this.artistRelatedArtistRepository.delete({ departureArtist: artist });
+    await this.artistRelatedArtistRepository.delete({ departureArtist: { id: artist.id } });
     const artistRelatedArtists = await Promise.all(
       arrivalArtists.map(async (arrivalArtist, i) => {
         const artistRelatedArtist = new ArtistRelatedArtist({
@@ -178,19 +187,36 @@ export class ArtistService {
     return artistRelatedArtists;
   }
 
-  async getArtist(artistId: string) {
+  async getArtist(artistId: string, albumGroup: ArtistAlbumGroup = 'direct') {
     let artist = await this.artistRepository.findOne({
       where: { id: artistId },
-      relations: ['albums', 'genres'],
+      relations: ['genres'],
     });
     if (
       artist == null ||
-      artist.collectedAt == null ||
-      Date.now() > artist.collectedAt.getTime() + this.ARTIST_RE_COLLECTING_PERIOD
+      ((albumGroup === 'direct' || albumGroup === 'both') &&
+        (artist.collectedDirectAlbumsAt == null ||
+          Date.now() > artist.collectedDirectAlbumsAt.getTime() + this.ARTIST_RE_COLLECTING_PERIOD)) ||
+      ((albumGroup === 'indirect' || albumGroup === 'both') &&
+        (artist.collectedIndirectAlbumsAt == null ||
+          Date.now() > artist.collectedIndirectAlbumsAt.getTime() + this.ARTIST_RE_COLLECTING_PERIOD))
     ) {
-      artist = await this.updateArtistAsSpotify(artistId);
+      artist = await this.updateArtistAsSpotify(artistId, albumGroup);
     }
-    return artist as Required<Artist>;
+    const artistAlbumsFindCriteria: FindOptionsWhere<ArtistAlbum> = {
+      artist: { id: artist.id },
+    };
+    if (albumGroup !== 'both') {
+      artistAlbumsFindCriteria.albumGroup = albumGroup;
+    }
+    const artistAlbums = await this.artistAlbumRepository.find({
+      where: artistAlbumsFindCriteria,
+      relations: ['album'],
+    });
+    return {
+      ...(artist as Required<Artist>),
+      albums: artistAlbums.map((artistAlbum) => artistAlbum.album),
+    };
   }
 
   async getArtistTopTracks(artistId: string) {

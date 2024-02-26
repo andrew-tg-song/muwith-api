@@ -6,10 +6,11 @@ import { Album } from './entities/album.entity';
 import { SpotifyModule } from 'src/spotify/spotify.module';
 import { TrackModule } from 'src/track/track.module';
 import { ArtistModule } from 'src/artist/artist.module';
+import { ArtistAlbum } from '../artist/entities/artist-album.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Album]),
+    TypeOrmModule.forFeature([Album, ArtistAlbum]),
     SpotifyModule,
     forwardRef(() => TrackModule),
     forwardRef(() => ArtistModule),

@@ -11,10 +11,11 @@ import { AlbumModule } from 'src/album/album.module';
 import { PlaylistSet } from './entities/playlist-set.entity';
 import { PlaylistSetPlaylist } from './entities/playlist-set-playlist.entity';
 import { PlaylistSetController } from './playlist-set.controller';
+import { ArtistAlbum } from '../artist/entities/artist-album.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Playlist, PlaylistTrack, PlaylistSet, PlaylistSetPlaylist]),
+    TypeOrmModule.forFeature([ArtistAlbum, Playlist, PlaylistTrack, PlaylistSet, PlaylistSetPlaylist]),
     SpotifyModule,
     TrackModule,
     AlbumModule,

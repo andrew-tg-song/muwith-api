@@ -42,7 +42,7 @@ The Music Application REST API is licensed under the MIT license. See the LICENS
 - [x] Album
   - [x] Documentation
 - [x] Artist
-  - [ ] Filter albumType in get artist
+  - [x] Filter albumType in get artist
   - [x] Documentation
 - [x] Playlist
   - [x] Playlist set

@@ -1,4 +1,3 @@
-import { Artist } from 'src/artist/entities/artist.entity';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { Constructable } from 'src/interface/constructable';
 import { Track } from 'src/track/entities/track.entity';
@@ -56,14 +55,6 @@ export class Album extends Constructable<Album> {
 
   @OneToMany(() => Track, (track) => track.album)
   tracks: Track[];
-
-  @ManyToMany(() => Artist, (artist) => artist.albums, { cascade: true })
-  @JoinTable({
-    name: 'ALBUM_ARTIST',
-    joinColumn: { name: 'albumId' },
-    inverseJoinColumn: { name: 'artistId' },
-  })
-  artists: Artist[];
 
   @ManyToMany(() => Genre, { cascade: true })
   @JoinTable({

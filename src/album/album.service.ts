@@ -8,6 +8,7 @@ import { ArtistService } from 'src/artist/artist.service';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { Track } from 'src/track/entities/track.entity';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
+import { ArtistAlbum } from '../artist/entities/artist-album.entity';
 
 @Injectable()
 export class AlbumService {
@@ -15,6 +16,7 @@ export class AlbumService {
 
   constructor(
     @InjectRepository(Album) private readonly albumRepository: Repository<Album>,
+    @InjectRepository(Album) private readonly artistAlbumRepository: Repository<ArtistAlbum>,
     private readonly spotifyAlbumService: SpotifyAlbumService,
     @Inject(forwardRef(() => TrackService))
     private readonly trackService: TrackService,
@@ -63,7 +65,7 @@ export class AlbumService {
       }),
     );
 
-    return await this.upsert({
+    const album = await this.upsert({
       id: spotifyAlbum.id,
       name: spotifyAlbum.name,
       albumType: spotifyAlbum.album_type,
@@ -76,15 +78,37 @@ export class AlbumService {
       popularity: spotifyAlbum.popularity,
       collectedAt: new Date(),
       tracks,
-      artists,
       genres: spotifyAlbum.genres.map((genre) => new Genre({ name: genre })),
     });
+
+    await Promise.all(
+      artists.map(async (artist) => {
+        // Avoid duplicate creation
+        const artistAlbum = await this.artistAlbumRepository.findOne({
+          where: {
+            artist: { id: artist.id },
+            album: { id: album.id },
+          },
+          relations: ['artist'],
+        });
+        if (!artistAlbum) {
+          const artistAlbum = new ArtistAlbum({
+            artist,
+            album,
+            albumGroup: album.albumType === 'compilation' ? 'indirect' : 'direct',
+          });
+          await this.artistAlbumRepository.save(artistAlbum);
+        }
+      }),
+    );
+
+    return album;
   }
 
   async getAlbum(albumId: string) {
     let album = await this.albumRepository.findOne({
       where: { id: albumId },
-      relations: ['tracks', 'artists', 'genres'],
+      relations: ['tracks', 'genres'],
     });
     if (
       album == null ||
@@ -93,6 +117,15 @@ export class AlbumService {
     ) {
       album = await this.updateAlbumAsSpotify(albumId);
     }
-    return album as Required<Album>;
+    const artistAlbums = await this.artistAlbumRepository.find({
+      where: {
+        album: { id: album.id },
+      },
+      relations: ['artist'],
+    });
+    return {
+      ...(album as Required<Album>),
+      artists: artistAlbums.map((artistAlbum) => artistAlbum.artist),
+    };
   }
 }

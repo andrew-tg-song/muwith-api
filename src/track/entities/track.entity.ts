@@ -50,7 +50,7 @@ export class Track extends Constructable<Track> {
   @ManyToOne(() => Album, (album) => album.tracks)
   album: Album;
 
-  @ManyToMany(() => Artist, (artist) => artist.tracks, { cascade: true })
+  @ManyToMany(() => Artist, { cascade: true })
   @JoinTable({
     name: 'TRACK_ARTIST',
     joinColumn: { name: 'trackId' },
