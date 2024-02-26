@@ -15,7 +15,7 @@ import { Genre } from 'src/genre/entities/genre.entity';
 
 @Injectable()
 export class SearchService {
-  private readonly SEARCH_CACHE_TTL = 1; //000 * 60 * 60;
+  private readonly SEARCH_CACHE_TTL = 1000 * 60 * 60;
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
