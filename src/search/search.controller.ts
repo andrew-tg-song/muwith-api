@@ -1,6 +1,9 @@
-import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { SEARCH_OBJECT_TYPES, SearchObjectType } from 'src/spotify/spotify-search/spotify-search.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { GuardedRequest } from 'src/interface/request';
+import { PushSearchHistoryDto } from './dto/push-search-history.dto';
 
 interface SearchQuery {
   keyword: string;
@@ -29,5 +32,17 @@ export class SearchController {
     }
     types.sort();
     return this.searchService.search(query.keyword, types, page);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('search-history')
+  getSearchHistory(@Request() req: GuardedRequest) {
+    return this.searchService.getSearchHistory(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('search-history')
+  pushSearchHistory(@Request() req: GuardedRequest, @Body() dto: PushSearchHistoryDto) {
+    return this.searchService.pushSearchHistory(req.user, dto.keyword);
   }
 }

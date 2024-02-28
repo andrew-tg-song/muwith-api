@@ -12,10 +12,15 @@ import { Artist } from 'src/artist/entities/artist.entity';
 import { Playlist } from 'src/playlist/entities/playlist.entity';
 import { Album } from 'src/album/entities/album.entity';
 import { Genre } from 'src/genre/entities/genre.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class SearchService {
   private readonly SEARCH_CACHE_TTL = 1000 * 60 * 60;
+
+  // TODO: Redis
+  private readonly SEARCH_HISTORY_MAX = 20;
+  private readonly searchHistory = new Map<number, string[]>();
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -171,5 +176,19 @@ export class SearchService {
     const searchedData = await this.searchAsSpotify(keyword, types, page);
     await this.cacheManager.set(cacheKey, JSON.stringify(searchedData), this.SEARCH_CACHE_TTL);
     return searchedData;
+  }
+
+  getSearchHistory(user: User) {
+    return this.searchHistory.get(user.id) ?? [];
+  }
+
+  pushSearchHistory(user: User, keyword: string) {
+    const history = this.getSearchHistory(user);
+    history.unshift(keyword);
+    if (history.length > this.SEARCH_HISTORY_MAX) {
+      history.pop();
+    }
+    this.searchHistory.set(user.id, history);
+    return history;
   }
 }
