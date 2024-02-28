@@ -33,7 +33,7 @@ export class UserService {
 
   async uploadProfileImage(user: User, file: Buffer, fileExt: string) {
     const fileName = v4() + fileExt;
-    const response = await this.s3Service.upload(file, { objectPath: fileName });
+    const response = await this.s3Service.publicUpload(file, fileName);
     user.profileImage = response.objectUrl;
     return await this.userRepository.save(user);
   }
