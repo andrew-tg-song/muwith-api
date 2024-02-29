@@ -16,7 +16,7 @@ export class AlbumService {
 
   constructor(
     @InjectRepository(Album) private readonly albumRepository: Repository<Album>,
-    @InjectRepository(Album) private readonly artistAlbumRepository: Repository<ArtistAlbum>,
+    @InjectRepository(ArtistAlbum) private readonly artistAlbumRepository: Repository<ArtistAlbum>,
     private readonly spotifyAlbumService: SpotifyAlbumService,
     @Inject(forwardRef(() => TrackService))
     private readonly trackService: TrackService,
