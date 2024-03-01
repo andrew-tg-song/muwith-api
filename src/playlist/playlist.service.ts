@@ -78,6 +78,9 @@ export class PlaylistService {
       if (track.episode) {
         continue;
       }
+      if (track.type !== 'track') {
+        continue;
+      }
       const artistsInAlbum = await Promise.all(
         track.album.artists.map(async (artist) => {
           return await this.artistService.upsert({

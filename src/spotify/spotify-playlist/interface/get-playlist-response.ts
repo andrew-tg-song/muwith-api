@@ -21,6 +21,7 @@ export interface GetPlaylistResponse {
       track: {
         explicit: boolean;
         episode: boolean;
+        type: 'track' | 'episode';
         album: {
           album_type: 'album' | 'single' | 'compilation';
           total_tracks: number;
