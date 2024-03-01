@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { SpotifyTrackService } from 'src/spotify/spotify-track/spotify-track.service';
 import { Track } from './entities/track.entity';
@@ -8,12 +9,15 @@ import { ArtistService } from 'src/artist/artist.service';
 import { YoutubeService } from 'src/youtube/youtube.service';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resolution-image.utility';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class TrackService {
   private readonly TRACK_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 7;
+  private readonly RECOMMENDATIONS_CACHE_TTL = 1000 * 60 * 60;
 
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRepository(Track) private readonly trackRepository: Repository<Track>,
     private readonly spotifyTrackService: SpotifyTrackService,
     private readonly youtubeService: YoutubeService,
@@ -68,6 +72,58 @@ export class TrackService {
     });
   }
 
+  @SpotifyTask()
+  private async getRecommendationsByTracksAsSpotify(trackIds: string[], limit: number) {
+    const spotifyResponse = await this.spotifyTrackService.getRecommendationsByTracks(trackIds, limit);
+    const spotifyTracks = spotifyResponse.tracks;
+
+    const tracks: Track[] = [];
+    for (const spotifyTrack of spotifyTracks) {
+      const foundTrack = await this.trackRepository.findOne({
+        where: { id: spotifyTrack.id },
+        relations: ['album', 'artists'],
+      });
+      if (foundTrack && foundTrack.popularity != null) {
+        tracks.push(foundTrack);
+        continue;
+      }
+
+      const album = await this.albumService.upsert({
+        id: spotifyTrack.album.id,
+        name: spotifyTrack.album.name,
+        albumType: spotifyTrack.album.album_type,
+        totalTracks: spotifyTrack.album.total_tracks,
+        thumbnailUrl: getHighestResolutionImage(spotifyTrack.album.images)?.url,
+        releaseDate: spotifyTrack.album.release_date,
+      });
+
+      const artists = await Promise.all(
+        spotifyTrack.artists.map(async (artist) => {
+          return await this.artistService.upsert({
+            id: artist.id,
+            name: artist.name,
+          });
+        }),
+      );
+
+      tracks.push(
+        await this.upsert({
+          id: spotifyTrack.id,
+          name: spotifyTrack.name,
+          explicit: spotifyTrack.explicit,
+          discNumber: spotifyTrack.disc_number,
+          trackNumber: spotifyTrack.track_number,
+          duration: spotifyTrack.duration_ms,
+          popularity: spotifyTrack.popularity,
+          album,
+          artists,
+        }),
+      );
+    }
+
+    return tracks;
+  }
+
   async getTrack(trackId: string) {
     let track = await this.trackRepository.findOne({
       where: { id: trackId },
@@ -81,5 +137,20 @@ export class TrackService {
       track = await this.updateTrackAsSpotifyWithYoutube(trackId);
     }
     return track as Required<Track>;
+  }
+
+  async getRecommendationsByTracks(trackIds: string[], limit: number) {
+    const hash = crypto
+      .createHash('sha256')
+      .update(trackIds.map((v) => `track_${v}`).join(','))
+      .digest('hex');
+    const cacheKey = `recommendations@${hash}@${limit}`;
+    const cachedData: string | null = await this.cacheManager.get(cacheKey);
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
+    const recommendationsData = await this.getRecommendationsByTracksAsSpotify(trackIds, limit);
+    await this.cacheManager.set(cacheKey, JSON.stringify(recommendationsData), this.RECOMMENDATIONS_CACHE_TTL);
+    return recommendationsData;
   }
 }
