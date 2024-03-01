@@ -15,6 +15,7 @@ export interface GetPlaylistResponse {
   };
   tracks: {
     items: {
+      added_at?: string;
       track: {
         explicit: boolean;
         episode: boolean;

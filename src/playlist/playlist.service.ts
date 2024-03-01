@@ -50,6 +50,7 @@ export class PlaylistService {
     });
 
     const tracks: Track[] = [];
+    const trackAddedAtMap = new Map<string, Date | null>();
     for (const spotifyTrack of spotifyPlaylist.tracks.items) {
       const track = spotifyTrack.track;
       if (track.episode) {
@@ -111,6 +112,7 @@ export class PlaylistService {
           artists,
         }),
       );
+      trackAddedAtMap.set(track.id, spotifyTrack.added_at ? new Date(spotifyTrack.added_at) : null);
     }
 
     await this.playlistTrackRepository.delete({ playlist: { id: playlist.id } });
@@ -119,6 +121,7 @@ export class PlaylistService {
         const playlistTrack = new PlaylistTrack({
           playlist,
           track,
+          addedAt: trackAddedAtMap.get(track.id),
           order: i + 1,
         });
         return await this.playlistTrackRepository.save(playlistTrack);

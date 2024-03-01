@@ -14,6 +14,9 @@ export class PlaylistTrack extends Constructable<PlaylistTrack> {
   @ManyToOne(() => Track)
   track: Track;
 
+  @Column({ nullable: true })
+  addedAt?: Date;
+
   @Column()
   order: number;
 }

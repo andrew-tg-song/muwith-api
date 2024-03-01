@@ -108,7 +108,7 @@ export class AlbumService {
   async getAlbum(albumId: string) {
     let album = await this.albumRepository.findOne({
       where: { id: albumId },
-      relations: ['tracks', 'genres'],
+      relations: { tracks: { artists: true }, genres: true },
     });
     if (
       album == null ||
