@@ -207,11 +207,11 @@ export class PlaylistService {
           });
           return {
             ...track,
-            addedAt: playlistTrack.addedAt,
             album: {
               ...track.album,
               artists: artistAlbumsInAlbum.map((artistAlbum) => artistAlbum.artist),
             },
+            addedAt: playlistTrack.addedAt,
           };
         }),
       ),
