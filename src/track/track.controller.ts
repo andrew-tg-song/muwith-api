@@ -16,6 +16,9 @@ export class TrackController {
       throw new BadRequestException('All required query parameters must be entered.');
     }
     const trackIds = query.trackIds.split(',');
+    if (trackIds.length > 5) {
+      throw new BadRequestException('track count must be 5 or less.');
+    }
     const limit = Number(query.limit ?? '10');
     if (isNaN(limit) || !Number.isInteger(limit) || limit < 1) {
       throw new BadRequestException('limit value must be natural number.');
