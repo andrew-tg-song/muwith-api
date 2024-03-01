@@ -6,6 +6,8 @@ export interface GetArtistResponse {
   id: string;
   images: {
     url: string;
+    width?: number;
+    height?: number;
   }[];
   name: string;
   popularity: number;

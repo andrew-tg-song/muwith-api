@@ -14,11 +14,11 @@ export class UserService {
     private readonly s3Service: S3Service,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
-    const loginIdHash = crypto.createHash('sha256').update(createUserDto.loginId).digest('hex');
-    const profileImage = `https://gravatar.com/avatar/${loginIdHash}?d=retro`;
+  async create(dto: CreateUserDto): Promise<User> {
+    const loginIdHash = crypto.createHash('sha256').update(dto.loginId).digest('hex');
+    const profileImage = dto.profileImage ?? `https://gravatar.com/avatar/${loginIdHash}?d=retro`;
     return await this.userRepository.save({
-      ...createUserDto,
+      ...dto,
       profileImage,
     });
   }
@@ -31,10 +31,14 @@ export class UserService {
     return await this.userRepository.findOneBy({ loginId });
   }
 
+  async upsert(user: Partial<User>) {
+    return await this.userRepository.save(user);
+  }
+
   async uploadProfileImage(user: User, file: Buffer, fileExt: string) {
     const fileName = v4() + fileExt;
     const response = await this.s3Service.publicUpload(file, fileName);
     user.profileImage = response.objectUrl;
-    return await this.userRepository.save(user);
+    return await this.upsert(user);
   }
 }

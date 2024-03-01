@@ -11,6 +11,7 @@ import { ArtistTopTrack } from './entities/artist-top-track.entity';
 import { ArtistRelatedArtist } from './entities/artist-related-artist.entity';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 import { ArtistAlbum } from './entities/artist-album.entity';
+import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resolution-image.utility';
 
 @Injectable()
 export class ArtistService {
@@ -43,7 +44,7 @@ export class ArtistService {
     const newArtist = new Artist({
       id: spotifyArtist.id,
       name: spotifyArtist.name,
-      thumbnailUrl: spotifyArtist.images[0]?.url,
+      thumbnailUrl: getHighestResolutionImage(spotifyArtist.images)?.url,
       followers: spotifyArtist.followers.total,
       popularity: spotifyArtist.popularity,
       genres: spotifyArtist.genres.map((genre) => new Genre({ name: genre })),
@@ -75,7 +76,7 @@ export class ArtistService {
           id: spotifyAlbum.id,
           name: spotifyAlbum.name,
           albumType: spotifyAlbum.album_type,
-          thumbnailUrl: spotifyAlbum.images[0]?.url,
+          thumbnailUrl: getHighestResolutionImage(spotifyAlbum.images)?.url,
           releaseDate: spotifyAlbum.release_date,
           totalTracks: spotifyAlbum.total_tracks,
         });
@@ -102,7 +103,7 @@ export class ArtistService {
         name: track.album.name,
         albumType: track.album.album_type,
         totalTracks: track.album.total_tracks,
-        thumbnailUrl: track.album.images[0]?.url,
+        thumbnailUrl: getHighestResolutionImage(track.album.images)?.url,
         releaseDate: track.album.release_date,
       });
 
@@ -159,7 +160,7 @@ export class ArtistService {
       const arrivalArtist = await this.upsert({
         id: spotifyArtist.id,
         name: spotifyArtist.name,
-        thumbnailUrl: spotifyArtist.images[0]?.url,
+        thumbnailUrl: getHighestResolutionImage(spotifyArtist.images)?.url,
         followers: spotifyArtist.followers.total,
         popularity: spotifyArtist.popularity,
         genres: spotifyArtist.genres.map((genre) => new Genre({ name: genre })),

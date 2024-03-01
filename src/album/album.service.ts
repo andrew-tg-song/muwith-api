@@ -9,6 +9,7 @@ import { Genre } from 'src/genre/entities/genre.entity';
 import { Track } from 'src/track/entities/track.entity';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 import { ArtistAlbum } from '../artist/entities/artist-album.entity';
+import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resolution-image.utility';
 
 @Injectable()
 export class AlbumService {
@@ -70,7 +71,7 @@ export class AlbumService {
       name: spotifyAlbum.name,
       albumType: spotifyAlbum.album_type,
       totalTracks: spotifyAlbum.total_tracks,
-      thumbnailUrl: spotifyAlbum.images[0]?.url,
+      thumbnailUrl: getHighestResolutionImage(spotifyAlbum.images)?.url,
       releaseDate: spotifyAlbum.release_date,
       copyright: spotifyAlbum.copyrights.find((v) => v.type === 'C')?.text,
       recordingCopyright: spotifyAlbum.copyrights.find((v) => v.type === 'P')?.text,

@@ -13,6 +13,7 @@ import { Playlist } from 'src/playlist/entities/playlist.entity';
 import { Album } from 'src/album/entities/album.entity';
 import { Genre } from 'src/genre/entities/genre.entity';
 import { User } from 'src/user/entities/user.entity';
+import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resolution-image.utility';
 
 @Injectable()
 export class SearchService {
@@ -52,7 +53,7 @@ export class SearchService {
           name: spotifyTrack.album.name,
           albumType: spotifyTrack.album.album_type,
           totalTracks: spotifyTrack.album.total_tracks,
-          thumbnailUrl: spotifyTrack.album.images[0]?.url,
+          thumbnailUrl: getHighestResolutionImage(spotifyTrack.album.images)?.url,
           releaseDate: spotifyTrack.album.release_date,
         });
 
@@ -99,7 +100,7 @@ export class SearchService {
               id: spotifyAlbum.id,
               name: spotifyAlbum.name,
               albumType: spotifyAlbum.album_type,
-              thumbnailUrl: spotifyAlbum.images[0]?.url,
+              thumbnailUrl: getHighestResolutionImage(spotifyAlbum.images)?.url,
               releaseDate: spotifyAlbum.release_date,
               totalTracks: spotifyAlbum.total_tracks,
             });
@@ -124,7 +125,7 @@ export class SearchService {
           await this.artistService.upsert({
             id: spotifyArtist.id,
             name: spotifyArtist.name,
-            thumbnailUrl: spotifyArtist.images[0]?.url,
+            thumbnailUrl: getHighestResolutionImage(spotifyArtist.images)?.url,
             followers: spotifyArtist.followers.total,
             popularity: spotifyArtist.popularity,
             genres: spotifyArtist.genres.map((genre) => new Genre({ name: genre })),
@@ -151,7 +152,7 @@ export class SearchService {
               id: spotifyPlaylist.id,
               name: spotifyPlaylist.name,
               description: spotifyPlaylist.description,
-              thumbnailUrl: spotifyPlaylist.images[0]?.url,
+              thumbnailUrl: getHighestResolutionImage(spotifyPlaylist.images)?.url,
             });
           }),
         )),

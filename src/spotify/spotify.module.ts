@@ -7,6 +7,7 @@ import { SpotifyPlaylistService } from './spotify-playlist/spotify-playlist.serv
 import { SpotifyTaskRegister } from './decorator/spotify-task.decorator';
 import { DiscoveryModule } from '@nestjs/core';
 import { SpotifySearchService } from './spotify-search/spotify-search.service';
+import { SpotifyUserService } from './spotify-user/spotify-user.service';
 
 @Module({
   imports: [DiscoveryModule],
@@ -18,6 +19,7 @@ import { SpotifySearchService } from './spotify-search/spotify-search.service';
     SpotifyArtistService,
     SpotifyPlaylistService,
     SpotifySearchService,
+    SpotifyUserService,
   ],
   exports: [
     SpotifyTrackService,
@@ -25,6 +27,7 @@ import { SpotifySearchService } from './spotify-search/spotify-search.service';
     SpotifyArtistService,
     SpotifyPlaylistService,
     SpotifySearchService,
+    SpotifyUserService,
   ],
 })
 export class SpotifyModule {}

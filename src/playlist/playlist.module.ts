@@ -12,6 +12,7 @@ import { PlaylistSet } from './entities/playlist-set.entity';
 import { PlaylistSetPlaylist } from './entities/playlist-set-playlist.entity';
 import { PlaylistSetController } from './playlist-set.controller';
 import { ArtistAlbum } from '../artist/entities/artist-album.entity';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ArtistAlbum } from '../artist/entities/artist-album.entity';
     TrackModule,
     AlbumModule,
     ArtistModule,
+    UserModule,
   ],
   providers: [PlaylistService],
   controllers: [PlaylistController, PlaylistSetController],

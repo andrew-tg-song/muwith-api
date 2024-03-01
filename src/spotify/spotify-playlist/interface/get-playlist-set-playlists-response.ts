@@ -3,6 +3,8 @@ export interface GetPlaylistSetPlaylistsResponseItem {
   id: string;
   images: {
     url: string;
+    width?: number;
+    height?: number;
   }[];
   name: string;
   owner: {

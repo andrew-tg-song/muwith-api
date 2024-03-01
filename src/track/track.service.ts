@@ -7,6 +7,7 @@ import { AlbumService } from 'src/album/album.service';
 import { ArtistService } from 'src/artist/artist.service';
 import { YoutubeService } from 'src/youtube/youtube.service';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
+import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resolution-image.utility';
 
 @Injectable()
 export class TrackService {
@@ -35,7 +36,7 @@ export class TrackService {
       name: spotifyTrack.album.name,
       albumType: spotifyTrack.album.album_type,
       totalTracks: spotifyTrack.album.total_tracks,
-      thumbnailUrl: spotifyTrack.album.images[0]?.url,
+      thumbnailUrl: getHighestResolutionImage(spotifyTrack.album.images)?.url,
       releaseDate: spotifyTrack.album.release_date,
     });
 

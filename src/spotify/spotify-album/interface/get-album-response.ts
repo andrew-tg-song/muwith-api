@@ -4,6 +4,8 @@ export interface GetAlbumResponse {
   id: string;
   images: {
     url: string;
+    width?: number;
+    height?: number;
   }[];
   name: string;
   release_date: string;

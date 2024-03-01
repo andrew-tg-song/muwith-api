@@ -1,5 +1,6 @@
 import { Constructable } from 'src/interface/constructable';
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('PLAYLIST')
 export class Playlist extends Constructable<Playlist> {
@@ -17,6 +18,9 @@ export class Playlist extends Constructable<Playlist> {
 
   @Column({ nullable: true })
   thumbnailUrl?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  owner?: User;
 
   @Column({ nullable: true })
   collectedAt?: Date;

@@ -8,6 +8,8 @@ export interface GetPlaylistResponse {
   };
   images: {
     url: string;
+    width?: number;
+    height?: number;
   }[];
   owner: {
     display_name?: string;

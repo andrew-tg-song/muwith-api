@@ -12,6 +12,9 @@ import { PlaylistSet } from './entities/playlist-set.entity';
 import { PlaylistSetPlaylist } from './entities/playlist-set-playlist.entity';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 import { ArtistAlbum } from '../artist/entities/artist-album.entity';
+import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resolution-image.utility';
+import { UserService } from 'src/user/user.service';
+import { SpotifyUserService } from 'src/spotify/spotify-user/spotify-user.service';
 
 @Injectable()
 export class PlaylistService {
@@ -27,9 +30,11 @@ export class PlaylistService {
     @InjectRepository(PlaylistSetPlaylist)
     private readonly playlistSetPlaylistRepository: Repository<PlaylistSetPlaylist>,
     private readonly spotifyPlaylistService: SpotifyPlaylistService,
+    private readonly spotifyUserService: SpotifyUserService,
     private readonly trackService: TrackService,
     private readonly albumService: AlbumService,
     private readonly artistService: ArtistService,
+    private readonly userService: UserService,
   ) {}
 
   async upsert(playlist: Partial<Playlist>) {
@@ -39,13 +44,30 @@ export class PlaylistService {
   @SpotifyTask()
   private async updatePlaylistAsSpotify(playlistId: string) {
     const spotifyPlaylist = await this.spotifyPlaylistService.getPlaylist(playlistId);
+    const spotifyUser = await this.spotifyUserService.getUser(spotifyPlaylist.owner.id);
+
+    let owner = await this.userService.findOneByLoginId(`spotify:${spotifyUser.id}`);
+    if (owner) {
+      owner = await this.userService.upsert({
+        ...owner,
+        name: spotifyUser.display_name ?? owner.name,
+        profileImage: getHighestResolutionImage(spotifyUser.images)?.url ?? owner.profileImage,
+      });
+    } else {
+      owner = await this.userService.create({
+        loginId: `spotify:${spotifyUser.id}`,
+        name: spotifyUser.display_name ?? 'spotify',
+        profileImage: getHighestResolutionImage(spotifyUser.images)?.url,
+      });
+    }
 
     const playlist = await this.upsert({
       id: spotifyPlaylist.id,
       name: spotifyPlaylist.name,
       description: spotifyPlaylist.description,
       followers: spotifyPlaylist.followers.total,
-      thumbnailUrl: spotifyPlaylist.images[0]?.url,
+      thumbnailUrl: getHighestResolutionImage(spotifyPlaylist.images)?.url,
+      owner,
       collectedAt: new Date(),
     });
 
@@ -69,7 +91,7 @@ export class PlaylistService {
         name: track.album.name,
         albumType: track.album.album_type,
         totalTracks: track.album.total_tracks,
-        thumbnailUrl: track.album.images[0]?.url,
+        thumbnailUrl: getHighestResolutionImage(track.album.images)?.url,
         releaseDate: track.album.release_date,
       });
       await Promise.all(
@@ -164,7 +186,7 @@ export class PlaylistService {
         id: spotifyPlaylist.id,
         name: spotifyPlaylist.name,
         description: spotifyPlaylist.description,
-        thumbnailUrl: spotifyPlaylist.images[0]?.url,
+        thumbnailUrl: getHighestResolutionImage(spotifyPlaylist.images)?.url,
       });
       const playlistSetPlaylist = new PlaylistSetPlaylist({
         playlistSet,
@@ -181,7 +203,10 @@ export class PlaylistService {
   }
 
   async getPlaylist(playlistId: string) {
-    const playlist = await this.playlistRepository.findOne({ where: { id: playlistId } });
+    const playlist = await this.playlistRepository.findOne({
+      where: { id: playlistId },
+      relations: ['owner'],
+    });
     if (
       playlist == null ||
       playlist.collectedAt == null ||
