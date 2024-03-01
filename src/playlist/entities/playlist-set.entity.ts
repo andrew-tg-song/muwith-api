@@ -9,7 +9,7 @@ export class PlaylistSet extends Constructable<PlaylistSet> {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   thumbnailUrl?: string;
 
   @Column()

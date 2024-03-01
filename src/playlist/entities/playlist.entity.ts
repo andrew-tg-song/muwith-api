@@ -15,8 +15,8 @@ export class Playlist extends Constructable<Playlist> {
   @Column({ nullable: true })
   followers?: number;
 
-  @Column()
-  thumbnailUrl: string;
+  @Column({ nullable: true })
+  thumbnailUrl?: string;
 
   @Column({ nullable: true })
   collectedAt?: Date;
