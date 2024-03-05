@@ -75,9 +75,6 @@ export class PlaylistService {
     const trackAddedAtMap = new Map<string, Date | null>();
     for (const spotifyTrack of spotifyPlaylist.tracks.items) {
       const track = spotifyTrack.track;
-      if (track.episode) {
-        continue;
-      }
       if (track.type !== 'track') {
         continue;
       }
