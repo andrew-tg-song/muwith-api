@@ -155,7 +155,7 @@ export class PlaylistService {
 
     return {
       ...playlist,
-      tracks: tracks.map(async (track) => {
+      tracks: tracks.map((track) => {
         return {
           ...track,
           album: {
