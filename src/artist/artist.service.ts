@@ -232,7 +232,7 @@ export class ArtistService {
     const artistTopTracks = await this.artistTopTrackRepository.find({
       where: { artist: { id: artist.id } },
       order: { rank: 'asc' },
-      relations: ['track'],
+      relations: { track: { album: true, artists: true } },
     });
     return artistTopTracks.map((artistTopTrack) => artistTopTrack.track);
   }
