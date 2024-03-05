@@ -15,6 +15,7 @@ import { ArtistAlbum } from '../artist/entities/artist-album.entity';
 import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resolution-image.utility';
 import { UserService } from 'src/user/user.service';
 import { SpotifyUserService } from 'src/spotify/spotify-user/spotify-user.service';
+import { Artist } from 'src/artist/entities/artist.entity';
 
 @Injectable()
 export class PlaylistService {
@@ -73,6 +74,7 @@ export class PlaylistService {
 
     const tracks: Track[] = [];
     const trackAddedAtMap = new Map<string, Date | null>();
+    const artistInAlbumMap = new Map<string, Partial<Artist>[]>();
     for (const spotifyTrack of spotifyPlaylist.tracks.items) {
       const track = spotifyTrack.track;
       if (track.type !== 'track') {
@@ -86,6 +88,7 @@ export class PlaylistService {
           });
         }),
       );
+      artistInAlbumMap.set(track.album.id, artistsInAlbum);
       const album = await this.albumService.upsert({
         id: track.album.id,
         name: track.album.name,
@@ -152,7 +155,16 @@ export class PlaylistService {
 
     return {
       ...playlist,
-      tracks,
+      tracks: tracks.map(async (track) => {
+        return {
+          ...track,
+          album: {
+            ...track.album,
+            artists: artistInAlbumMap.get(track.album.id),
+          },
+          addedAt: trackAddedAtMap.get(track.id),
+        };
+      }),
     };
   }
 
