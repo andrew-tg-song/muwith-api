@@ -25,6 +25,9 @@ export class Playlist extends Constructable<Playlist> {
   @Column({ nullable: true })
   collectedAt?: Date;
 
+  @Column({ default: false })
+  notCollect: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -6,12 +6,31 @@ import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
 import { S3Service } from 'src/aws/s3/s3.service';
 import * as crypto from 'crypto';
+import { ListenableObjectType } from '../constants';
+import { Log, LogType } from './entities/log.entity';
+import { Track } from '../track/entities/track.entity';
+import { Album } from '../album/entities/album.entity';
+import { Artist } from '../artist/entities/artist.entity';
+import { Playlist } from '../playlist/entities/playlist.entity';
+import { TrackService } from '../track/track.service';
+import { AlbumService } from '../album/album.service';
+import { ArtistService } from '../artist/artist.service';
+import { PlaylistService } from '../playlist/playlist.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Log) private readonly logRepository: Repository<Log>,
     private readonly s3Service: S3Service,
+    @Inject(forwardRef(() => TrackService))
+    private readonly trackService: TrackService,
+    @Inject(forwardRef(() => AlbumService))
+    private readonly albumService: AlbumService,
+    @Inject(forwardRef(() => ArtistService))
+    private readonly artistService: ArtistService,
+    @Inject(forwardRef(() => PlaylistService))
+    private readonly playlistService: PlaylistService,
   ) {}
 
   async create(dto: CreateUserDto): Promise<User> {
@@ -40,5 +59,98 @@ export class UserService {
     const response = await this.s3Service.publicUpload(file, fileName);
     user.profileImage = response.objectUrl;
     return await this.upsert(user);
+  }
+
+  async getUsers(userIds: number[]) {
+    const users = await this.userRepository.find({
+      where: userIds.map((userId) => ({ id: userId })),
+    });
+    const userMap = new Map<number, Partial<User>>();
+    for (const user of users) {
+      userMap.set(user.id, {
+        id: user.id,
+        name: user.name,
+        profileImage: user.profileImage,
+        followers: user.followers,
+        createdAt: user.createdAt,
+      });
+    }
+    return userMap;
+  }
+
+  async getUser(userId: number) {
+    const userMap = await this.getUsers([userId]);
+    return userMap.get(userId);
+  }
+
+  private async logToObject(log: Log) {
+    if (log.objectType === ListenableObjectType.TRACK) {
+      return await this.trackService.getTrack(log.objectId);
+    } else if (log.objectType === ListenableObjectType.ALBUM) {
+      return await this.albumService.getAlbum(log.objectId);
+    } else if (log.objectType === ListenableObjectType.ARTIST) {
+      return await this.artistService.getArtist(log.objectId);
+    } else if (log.objectType === ListenableObjectType.PLAYLIST) {
+      return await this.playlistService.getPlaylist(log.objectId);
+    }
+  }
+
+  async logPlay(user: User, objectType: ListenableObjectType, objectId: string) {
+    return await this.logRepository.save({
+      userId: user.id,
+      logType: LogType.PLAY,
+      objectType,
+      objectId,
+    });
+  }
+
+  async getRandomPlayedObjects(user: User) {
+    const subQuery = this.logRepository
+      .createQueryBuilder()
+      .select('id')
+      .where('userId = :userId AND logType = :logType', { userId: user.id, logType: LogType.PLAY })
+      .orderBy('RAND()');
+    const logs = await this.logRepository
+      .createQueryBuilder()
+      .where('id IN (:...ids)', { ids: subQuery.getQuery() })
+      .limit(20)
+      .getMany();
+    const objects: (Track | Album | Artist | Playlist)[] = [];
+    for (const log of logs) {
+      objects.push(await this.logToObject(log));
+    }
+    return objects;
+  }
+
+  async logTrackListen(user: User, trackId: string) {
+    return await this.logRepository.save({
+      userId: user.id,
+      logType: LogType.PLAY,
+      objectType: ListenableObjectType.TRACK,
+      objectId: trackId,
+    });
+  }
+
+  async getFrequentListenedTracks(user: User) {
+    const logs = await this.logRepository
+      .createQueryBuilder()
+      .where('userId = :userId AND logType = :logType', { userId: user.id, logType: LogType.LISTEN })
+      .groupBy('objectId')
+      .orderBy('COUNT(*) DESC')
+      .limit(100)
+      .getMany();
+    const tracks = await this.trackService.getTracks(logs.map((log) => log.objectId));
+    return tracks;
+  }
+
+  async getRecentlyListenedTracks(user: User) {
+    const logs = await this.logRepository
+      .createQueryBuilder()
+      .where('userId = :userId AND logType = :logType', { userId: user.id, logType: LogType.LISTEN })
+      .orderBy('createdAt DESC')
+      .limit(100)
+      .getMany();
+    const tracks = await this.trackService.getTracks(logs.map((log) => log.objectId));
+    return tracks;
   }
 }

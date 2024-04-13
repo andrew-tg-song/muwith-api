@@ -13,7 +13,7 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class TrackService {
-  private readonly TRACK_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 7;
+  private readonly TRACK_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 365;
   private readonly RECOMMENDATIONS_CACHE_TTL = 1000 * 60 * 60;
 
   constructor(
@@ -124,19 +124,32 @@ export class TrackService {
     return tracks;
   }
 
-  async getTrack(trackId: string) {
-    let track = await this.trackRepository.findOne({
-      where: { id: trackId },
+  async getTracks(trackIds: string[]) {
+    const tracks = await this.trackRepository.find({
+      where: trackIds.map((trackId) => ({ id: trackId })),
       relations: ['album', 'artists'],
     });
-    if (
-      track == null ||
-      track.collectedAt == null ||
-      Date.now() > track.collectedAt.getTime() + this.TRACK_RE_COLLECTING_PERIOD
-    ) {
-      track = await this.updateTrackAsSpotifyWithYoutube(trackId);
+    const trackMap = new Map<string, Track>();
+    for (const track of tracks) {
+      trackMap.set(track.id, track);
     }
-    return track as Required<Track>;
+    for (const trackId in trackIds) {
+      let track = trackMap.get(trackId);
+      if (
+        track == null ||
+        track.collectedAt == null ||
+        Date.now() > track.collectedAt.getTime() + this.TRACK_RE_COLLECTING_PERIOD
+      ) {
+        track = await this.updateTrackAsSpotifyWithYoutube(trackId);
+      }
+      trackMap.set(trackId, track);
+    }
+    return trackMap;
+  }
+
+  async getTrack(trackId: string) {
+    const trackMap = await this.getTracks([trackId]);
+    return trackMap.get(trackId);
   }
 
   async getRecommendationsByTracks(trackIds: string[], limit: number) {

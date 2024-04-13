@@ -1,28 +1,25 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { AwsModule } from 'src/aws/aws.module';
-import { LikeModule } from '../like/like.module';
-import { Log } from './entities/log.entity';
+import { Like } from './entities/like.entity';
+import { LikeController } from './like.controller';
+import { LikeService } from './like.service';
 import { TrackModule } from '../track/track.module';
 import { AlbumModule } from '../album/album.module';
 import { ArtistModule } from '../artist/artist.module';
 import { PlaylistModule } from '../playlist/playlist.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Log]),
-    AwsModule,
-    forwardRef(() => LikeModule),
+    TypeOrmModule.forFeature([Like]),
     forwardRef(() => TrackModule),
     forwardRef(() => AlbumModule),
     forwardRef(() => ArtistModule),
     forwardRef(() => PlaylistModule),
+    forwardRef(() => UserModule),
   ],
-  controllers: [UserController],
-  providers: [UserService],
-  exports: [UserService],
+  controllers: [LikeController],
+  providers: [LikeService],
+  exports: [LikeService],
 })
-export class UserModule {}
+export class LikeModule {}

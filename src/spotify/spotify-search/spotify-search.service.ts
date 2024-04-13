@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { SpotifyClientService } from '../spotify-client/spotify-client.service';
 import { SearchResponse } from './interface/search-response';
+import { ObjectType } from '../../constants';
 
-export const SEARCH_OBJECT_TYPES = ['track', 'album', 'artist', 'playlist'] as const;
+export const SEARCH_OBJECT_TYPES = [
+  ObjectType.TRACK,
+  ObjectType.ALBUM,
+  ObjectType.ARTIST,
+  ObjectType.PLAYLIST,
+] as const;
 export type SearchObjectType = (typeof SEARCH_OBJECT_TYPES)[number];
 
 @Injectable()

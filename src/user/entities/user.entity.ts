@@ -15,6 +15,9 @@ export class User extends Constructable<User> {
   @Column()
   profileImage: string;
 
+  @Column({ default: 0 })
+  followers: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

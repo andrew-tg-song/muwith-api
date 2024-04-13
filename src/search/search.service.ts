@@ -17,7 +17,7 @@ import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resol
 
 @Injectable()
 export class SearchService {
-  private readonly SEARCH_CACHE_TTL = 1000 * 60 * 60;
+  private readonly SEARCH_CACHE_TTL = 1000 * 60 * 60 * 24 * 365;
 
   // TODO: Redis
   private readonly SEARCH_HISTORY_MAX = 20;

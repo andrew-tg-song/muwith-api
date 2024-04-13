@@ -10,10 +10,11 @@ import { Track } from 'src/track/entities/track.entity';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 import { ArtistAlbum } from '../artist/entities/artist-album.entity';
 import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resolution-image.utility';
+import { Artist } from '../artist/entities/artist.entity';
 
 @Injectable()
 export class AlbumService {
-  private readonly ALBUM_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 7;
+  private readonly ALBUM_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 365;
 
   constructor(
     @InjectRepository(Album) private readonly albumRepository: Repository<Album>,
@@ -106,27 +107,40 @@ export class AlbumService {
     return album;
   }
 
-  async getAlbum(albumId: string) {
-    let album = await this.albumRepository.findOne({
-      where: { id: albumId },
+  async getAlbums(albumIds: string[]) {
+    const albums = await this.albumRepository.find({
+      where: albumIds.map((albumId) => ({ id: albumId })),
       relations: { tracks: { artists: true }, genres: true },
     });
-    if (
-      album == null ||
-      album.collectedAt == null ||
-      Date.now() > album.collectedAt.getTime() + this.ALBUM_RE_COLLECTING_PERIOD
-    ) {
-      album = await this.updateAlbumAsSpotify(albumId);
+    const albumMap = new Map<string, Album & { artists?: Artist[] }>();
+    for (const album of albums) {
+      albumMap.set(album.id, album);
     }
-    const artistAlbums = await this.artistAlbumRepository.find({
-      where: {
-        album: { id: album.id },
-      },
-      relations: ['artist'],
-    });
-    return {
-      ...(album as Required<Album>),
-      artists: artistAlbums.map((artistAlbum) => artistAlbum.artist),
-    };
+    for (const albumId in albumIds) {
+      let album = albumMap.get(albumId);
+      if (
+        album == null ||
+        album.collectedAt == null ||
+        Date.now() > album.collectedAt.getTime() + this.ALBUM_RE_COLLECTING_PERIOD
+      ) {
+        album = await this.updateAlbumAsSpotify(albumId);
+      }
+      const artistAlbums = await this.artistAlbumRepository.find({
+        where: {
+          album: { id: album.id },
+        },
+        relations: ['artist'],
+      });
+      albumMap.set(albumId, {
+        ...(album as Required<Album>),
+        artists: artistAlbums.map((artistAlbum) => artistAlbum.artist),
+      });
+    }
+    return albumMap;
+  }
+
+  async getAlbum(albumId: string) {
+    const trackMap = await this.getAlbums([albumId]);
+    return trackMap.get(albumId);
   }
 }

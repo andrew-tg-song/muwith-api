@@ -12,12 +12,13 @@ import { ArtistRelatedArtist } from './entities/artist-related-artist.entity';
 import { SpotifyTask } from 'src/spotify/decorator/spotify-task.decorator';
 import { ArtistAlbum } from './entities/artist-album.entity';
 import { getHighestResolutionImage } from 'src/spotify/utility/get-highest-resolution-image.utility';
+import { Album } from '../album/entities/album.entity';
 
 @Injectable()
 export class ArtistService {
-  private readonly ARTIST_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 1;
-  private readonly ARTIST_TOP_TRACKS_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 1;
-  private readonly ARTIST_RELATED_ARTISTS_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 1;
+  private readonly ARTIST_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 365;
+  private readonly ARTIST_TOP_TRACKS_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 365;
+  private readonly ARTIST_RELATED_ARTISTS_RE_COLLECTING_PERIOD = 1000 * 60 * 60 * 24 * 365;
 
   constructor(
     @InjectRepository(Artist) private readonly artistRepository: Repository<Artist>,
@@ -188,36 +189,49 @@ export class ArtistService {
     return artistRelatedArtists;
   }
 
-  async getArtist(artistId: string, albumGroup: ArtistAlbumGroup = 'direct') {
-    let artist = await this.artistRepository.findOne({
-      where: { id: artistId },
+  async getArtists(artistIds: string[], albumGroup: ArtistAlbumGroup = 'direct') {
+    const artists = await this.artistRepository.find({
+      where: artistIds.map((artistId) => ({ id: artistId })),
       relations: ['genres'],
     });
-    if (
-      artist == null ||
-      ((albumGroup === 'direct' || albumGroup === 'both') &&
-        (artist.collectedDirectAlbumsAt == null ||
-          Date.now() > artist.collectedDirectAlbumsAt.getTime() + this.ARTIST_RE_COLLECTING_PERIOD)) ||
-      ((albumGroup === 'indirect' || albumGroup === 'both') &&
-        (artist.collectedIndirectAlbumsAt == null ||
-          Date.now() > artist.collectedIndirectAlbumsAt.getTime() + this.ARTIST_RE_COLLECTING_PERIOD))
-    ) {
-      artist = await this.updateArtistAsSpotify(artistId, albumGroup);
+    const artistMap = new Map<string, Artist & { albums?: Album[] }>();
+    for (const artist of artists) {
+      artistMap.set(artist.id, artist);
     }
-    const artistAlbumsFindCriteria: FindOptionsWhere<ArtistAlbum> = {
-      artist: { id: artist.id },
-    };
-    if (albumGroup !== 'both') {
-      artistAlbumsFindCriteria.albumGroup = albumGroup;
+    for (const artistId in artistIds) {
+      let artist = artistMap.get(artistId);
+      if (
+        artist == null ||
+        ((albumGroup === 'direct' || albumGroup === 'both') &&
+          (artist.collectedDirectAlbumsAt == null ||
+            Date.now() > artist.collectedDirectAlbumsAt.getTime() + this.ARTIST_RE_COLLECTING_PERIOD)) ||
+        ((albumGroup === 'indirect' || albumGroup === 'both') &&
+          (artist.collectedIndirectAlbumsAt == null ||
+            Date.now() > artist.collectedIndirectAlbumsAt.getTime() + this.ARTIST_RE_COLLECTING_PERIOD))
+      ) {
+        artist = await this.updateArtistAsSpotify(artistId, albumGroup);
+      }
+      const artistAlbumsFindCriteria: FindOptionsWhere<ArtistAlbum> = {
+        artist: { id: artist.id },
+      };
+      if (albumGroup !== 'both') {
+        artistAlbumsFindCriteria.albumGroup = albumGroup;
+      }
+      const artistAlbums = await this.artistAlbumRepository.find({
+        where: artistAlbumsFindCriteria,
+        relations: ['album'],
+      });
+      artistMap.set(artist.id, {
+        ...(artist as Required<Artist>),
+        albums: artistAlbums.map((artistAlbum) => artistAlbum.album),
+      });
     }
-    const artistAlbums = await this.artistAlbumRepository.find({
-      where: artistAlbumsFindCriteria,
-      relations: ['album'],
-    });
-    return {
-      ...(artist as Required<Artist>),
-      albums: artistAlbums.map((artistAlbum) => artistAlbum.album),
-    };
+    return artistMap;
+  }
+
+  async getArtist(artistId: string, albumGroup: ArtistAlbumGroup = 'direct') {
+    const artistMap = await this.getArtists([artistId], albumGroup);
+    return artistMap.get(artistId);
   }
 
   async getArtistTopTracks(artistId: string) {

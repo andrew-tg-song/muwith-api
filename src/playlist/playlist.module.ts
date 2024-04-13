@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PlaylistService } from './playlist.service';
 import { PlaylistController } from './playlist.controller';
 import { SpotifyModule } from 'src/spotify/spotify.module';
@@ -13,6 +13,8 @@ import { PlaylistSetPlaylist } from './entities/playlist-set-playlist.entity';
 import { PlaylistSetController } from './playlist-set.controller';
 import { ArtistAlbum } from '../artist/entities/artist-album.entity';
 import { UserModule } from 'src/user/user.module';
+import { LikeModule } from '../like/like.module';
+import { AwsModule } from '../aws/aws.module';
 
 @Module({
   imports: [
@@ -21,7 +23,9 @@ import { UserModule } from 'src/user/user.module';
     TrackModule,
     AlbumModule,
     ArtistModule,
-    UserModule,
+    forwardRef(() => UserModule),
+    forwardRef(() => LikeModule),
+    AwsModule,
   ],
   providers: [PlaylistService],
   controllers: [PlaylistController, PlaylistSetController],
