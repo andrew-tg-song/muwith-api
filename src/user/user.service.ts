@@ -62,6 +62,9 @@ export class UserService {
   }
 
   async getUsers(userIds: number[]) {
+    if (userIds.length === 0) {
+      return new Map<number, Partial<User>>();
+    }
     const users = await this.userRepository.find({
       where: userIds.map((userId) => ({ id: userId })),
     });

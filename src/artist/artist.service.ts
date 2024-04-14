@@ -190,6 +190,9 @@ export class ArtistService {
   }
 
   async getArtists(artistIds: string[], albumGroup: ArtistAlbumGroup = 'direct') {
+    if (artistIds.length === 0) {
+      return new Map<string, Artist & { albums?: Album[] }>();
+    }
     const artists = await this.artistRepository.find({
       where: artistIds.map((artistId) => ({ id: artistId })),
       relations: ['genres'],

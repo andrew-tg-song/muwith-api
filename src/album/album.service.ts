@@ -108,6 +108,9 @@ export class AlbumService {
   }
 
   async getAlbums(albumIds: string[]) {
+    if (albumIds.length === 0) {
+      return new Map<string, Album & { artists?: Artist[] }>();
+    }
     const albums = await this.albumRepository.find({
       where: albumIds.map((albumId) => ({ id: albumId })),
       relations: { tracks: { artists: true }, genres: true },

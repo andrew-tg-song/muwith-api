@@ -125,6 +125,9 @@ export class TrackService {
   }
 
   async getTracks(trackIds: string[]) {
+    if (trackIds.length === 0) {
+      return new Map<string, Track>();
+    }
     const tracks = await this.trackRepository.find({
       where: trackIds.map((trackId) => ({ id: trackId })),
       relations: ['album', 'artists'],

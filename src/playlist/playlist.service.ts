@@ -227,6 +227,9 @@ export class PlaylistService {
   }
 
   async getPlaylists(playlistIds: string[]) {
+    if (playlistIds.length === 0) {
+      return new Map<string, Playlist & { tracks?: Track[] }>();
+    }
     const playlists = await this.playlistRepository.find({
       where: playlistIds.map((playlistId) => ({ id: playlistId })),
       relations: ['owner'],
