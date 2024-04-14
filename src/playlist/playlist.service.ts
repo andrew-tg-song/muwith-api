@@ -235,7 +235,7 @@ export class PlaylistService {
     for (const playlist of playlists) {
       playlistMap.set(playlist.id, playlist);
     }
-    for (const playlistId in playlistIds) {
+    for (const playlistId of playlistIds) {
       let playlist = playlistMap.get(playlistId);
       if (
         playlist == null ||

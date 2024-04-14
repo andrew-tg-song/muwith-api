@@ -116,7 +116,7 @@ export class AlbumService {
     for (const album of albums) {
       albumMap.set(album.id, album);
     }
-    for (const albumId in albumIds) {
+    for (const albumId of albumIds) {
       let album = albumMap.get(albumId);
       if (
         album == null ||

@@ -198,7 +198,7 @@ export class ArtistService {
     for (const artist of artists) {
       artistMap.set(artist.id, artist);
     }
-    for (const artistId in artistIds) {
+    for (const artistId of artistIds) {
       let artist = artistMap.get(artistId);
       if (
         artist == null ||

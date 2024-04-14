@@ -133,7 +133,7 @@ export class TrackService {
     for (const track of tracks) {
       trackMap.set(track.id, track);
     }
-    for (const trackId in trackIds) {
+    for (const trackId of trackIds) {
       let track = trackMap.get(trackId);
       if (
         track == null ||
