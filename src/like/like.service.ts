@@ -150,7 +150,7 @@ export class LikeService {
       },
     });
     const users = await this.userService.getUsers(likes.map((like) => like.userId));
-    return users;
+    return Array.from(users.values());
   }
 
   async deleteLikes(objectType: ObjectType, objectId: string) {
