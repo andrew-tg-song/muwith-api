@@ -139,6 +139,25 @@ export class LikeService {
     }
   }
 
+  async getLikeObjectsByUserSimplify(userId: number, objectType: ObjectType, objectIds: string[]) {
+    const likes = await this.likeRepository.find({
+      where: objectIds.map((objectId) => ({
+        userId,
+        objectType,
+        objectId,
+      })),
+    });
+
+    const isExistsSet: Record<string, number> = {};
+    objectIds.forEach((objectId) => {
+      isExistsSet[objectId] = 0;
+    });
+    likes.forEach((like) => {
+      isExistsSet[like.objectId] = 1;
+    });
+    return isExistsSet;
+  }
+
   async getUsersByObject(objectType: ObjectType, objectId: string) {
     const likes = await this.likeRepository.find({
       where: {

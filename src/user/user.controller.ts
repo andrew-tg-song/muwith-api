@@ -10,6 +10,7 @@ import {
   Param,
   forwardRef,
   Inject,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -54,6 +55,15 @@ export class UserController {
   @Get(':id/like/:objectType')
   async getUserLikeObjects(@Param('id') id: string, @Param('objectType') objectType: ObjectType) {
     return await this.likeService.getLikeObjectsByUser(Number(id), objectType);
+  }
+
+  @Get(':id/like/:objectType/simplify')
+  async getUserLikeObjectsSimplify(
+    @Param('id') id: string,
+    @Param('objectType') objectType: ObjectType,
+    @Query('objectIds') objectIds: string,
+  ) {
+    return await this.likeService.getLikeObjectsByUserSimplify(Number(id), objectType, objectIds.split(','));
   }
 
   @UseGuards(JwtAuthGuard)
