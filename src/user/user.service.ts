@@ -115,7 +115,7 @@ export class UserService {
       .orderBy('RAND()');
     const logs = await this.logRepository
       .createQueryBuilder()
-      .where('id IN (:...ids)', { ids: subQuery.getQuery() })
+      .where('id IN (:ids)', { ids: subQuery.getQuery() })
       .limit(20)
       .getMany();
     const objects: (Track | Album | Artist | Playlist)[] = [];
