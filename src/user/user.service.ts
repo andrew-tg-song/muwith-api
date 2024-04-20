@@ -108,19 +108,19 @@ export class UserService {
   }
 
   async getRandomPlayedObjects(user: User) {
-    const subQuery = this.logRepository
-      .createQueryBuilder()
-      .select('id')
-      .where('userId = :userId AND logType = :logType', { userId: user.id, logType: LogType.PLAY })
-      .orderBy('RAND()');
     const logs = await this.logRepository
       .createQueryBuilder()
-      .where('id IN (:ids)', { ids: subQuery.getQuery() })
+      .where('userId = :userId AND logType = :logType', { userId: user.id, logType: LogType.PLAY })
+      .groupBy('logType, objectId')
+      .orderBy('RANDOM()')
       .limit(20)
       .getMany();
-    const objects: (Track | Album | Artist | Playlist)[] = [];
+    const objects: ((Track | Album | Artist | Playlist) & { objectType: string })[] = [];
     for (const log of logs) {
-      objects.push(await this.logToObject(log));
+      objects.push({
+        ...(await this.logToObject(log)),
+        objectType: log.objectType,
+      });
     }
     return objects;
   }
@@ -128,7 +128,7 @@ export class UserService {
   async logTrackListen(user: User, trackId: string) {
     return await this.logRepository.save({
       userId: user.id,
-      logType: LogType.PLAY,
+      logType: LogType.LISTEN,
       objectType: ListenableObjectType.TRACK,
       objectId: trackId,
     });
@@ -139,21 +139,22 @@ export class UserService {
       .createQueryBuilder()
       .where('userId = :userId AND logType = :logType', { userId: user.id, logType: LogType.LISTEN })
       .groupBy('objectId')
-      .orderBy('COUNT(*) DESC')
+      .orderBy('COUNT(*)', 'DESC')
       .limit(100)
       .getMany();
     const tracks = await this.trackService.getTracks(logs.map((log) => log.objectId));
-    return tracks;
+    return Array.from(tracks.values());
   }
 
   async getRecentlyListenedTracks(user: User) {
     const logs = await this.logRepository
       .createQueryBuilder()
       .where('userId = :userId AND logType = :logType', { userId: user.id, logType: LogType.LISTEN })
-      .orderBy('createdAt DESC')
+      .groupBy('objectId')
+      .orderBy('MAX(createdAt)', 'DESC')
       .limit(100)
       .getMany();
     const tracks = await this.trackService.getTracks(logs.map((log) => log.objectId));
-    return tracks;
+    return Array.from(tracks.values());
   }
 }
